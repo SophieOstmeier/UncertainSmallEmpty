@@ -33,7 +33,7 @@ pip install -e .
 # Usage
 
 ```
- python3 evaluator_Test_git.py Test_files_gt Test_files_segmentation -hidden -check
+ python3 evaluator_run.py Test_files_gt Test_files_segmentation -hidden -check
 ```
 
 # Backbone model and code used in publication
