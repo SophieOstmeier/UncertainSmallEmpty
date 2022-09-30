@@ -2,7 +2,7 @@
 
 Here are the implementations and definitions for the metrics used in 
 
-"Evaluation of Medical Image Segmentation Models for Uncertain, Small or Empty Reference Annotations"
+ "Evaluation of Medical Image Segmentation Models for Uncertain, Small or Empty Reference Annotations"
 
  Sophie Ostmeier, Brian Axelrod, Jeroen Bertels, Fabian Isensee, Maarten G.Lansberg, Soren Christensen, Gregory W. Albers, Li-Jia Li, Jeremy J. Heit
 
@@ -18,7 +18,10 @@ Here are the implementations and definitions for the metrics used in
  
 You can use this evaluator on two directories with .nii.gz files that contain the segmentations you would like to compare by using
 
-`
+`git clone https://github.com/SophieOstmeier/UncertainSmallEmpty.git
+`cd UncertainSmallEmpty
+`pip install -e .
+
 The backbone model is nnUNet found here
 
 https://github.com/MIC-DKFZ/nnUNet.git
