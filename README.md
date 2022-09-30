@@ -15,7 +15,10 @@ Here are the implementations and definitions for the metrics used in
  	(or arXiv:2209.13008v1 [eess.IV] for this version)
  
  https://doi.org/10.48550/arXiv.2209.13008
+ 
+You can use this evaluator on two directories with .nii.gz files that contain the segmentations you would like to compare by using
 
+`
 The backbone model is nnUNet found here
 
 https://github.com/MIC-DKFZ/nnUNet.git
