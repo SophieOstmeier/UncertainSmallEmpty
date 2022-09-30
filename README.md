@@ -27,8 +27,7 @@ The ground truth segmentation has to match the corresponding manual or predicted
 # Installation
 ```
 git clone https://github.com/SophieOstmeier/UncertainSmallEmpty.git
-cd UncertainSmallEmpty
-pip install -e .
+pip install UncertainSmallEmpty/
 ```
 # Usage
 
