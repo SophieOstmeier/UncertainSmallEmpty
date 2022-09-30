@@ -41,9 +41,8 @@ pip install UncertainSmallEmpty/
 | **SDT 5mm}**  | ✅                                           | ✅                                                | ✅                                  | ❌ set threshold                 |
 | **SDT 10mm}** | ❌                                                    | ✅                                                | ✅                                  | ❌ set threshold                 |
 
-# Backbone model and code used in publication
+# Backbone model and evaluator used in publication
 
-The backbone model and evaluator is nnUNet found here
 ```
 https://github.com/MIC-DKFZ/nnUNet.git
 ```
