@@ -19,6 +19,7 @@ import os
 import numpy as np
 import nibabel as nib
 import glob
+import argparse
 
 from evaluation.evaluator import evaluate_folder
 
@@ -75,8 +76,12 @@ def check_shape2(folder_with_predictions, folder_with_gts):
             # print(str(shape_p), str(shape_gts))
             list_p_shp.append(img)
             # list_gts_shp.append(shape_gts)
-    print('false: ' + str(fls))
-    print(list_p_shp)
+    if len(list_p_shp) != 0:
+        print('Number of non-matching files: ' + str(fls))
+        print('The shapes of these files do not match: ' + list_p_shp)
+        print('Please check if all ground truths have a corresponding segementation')
+    else:
+        print('All good. The shapes of all files match!')
 
 def check_spacing2(folder_with_predictions, folder_with_gts):
     list_p = subfiles(folder_with_predictions, prefix='NCCT', sort=True)
@@ -137,14 +142,24 @@ def check_volume2(folder_with_predictions, folder_with_gts):
 
 if __name__ == '__main__':
     
-    # input files
-    folder_with_gts = ''
-    folder_with_predictions = ''
+    parser = argparse.ArgumentParser()
+    parser.add_argument("folder_with_gts", help="should be your folder with the ground truth segmentation in .nii.gz format")
+    parser.add_argument("folder_with_predictions", help="should be your folder with the segmentation you would like to compare to the ground truth segmentation. Must be in in .nii.gz format")
+    parser.add_argument("-hidden", help="removes all hidden files in input folders")
+    parser.add_argument("-check", help="checks gt and prediction/segmentations for same shape")
+
+    args = parser.parse_args()
     
-     # checking for hidden files and dimension agreement 
-    remove_hidden(folder_with_gts)
-    remove_hidden(folder_with_predictions)
-    check_shape2(folder_with_gts, folder_with_predictions)
+    # input folders
+    folder_with_gts = args.folder_with_gts
+    folder_with_predictions = args.folder_with_predictions
+    
+    # checking for hidden files and dimension agreement 
+    if args.hidden:
+        remove_hidden(folder_with_gts)
+        remove_hidden(folder_with_predictions)
+    if args.check:
+        check_shape2(folder_with_gts, folder_with_predictions)
     # check_spacing2(folder_with_gts, folder_with_predictions)
     
     #run
