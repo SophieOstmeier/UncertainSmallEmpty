@@ -43,7 +43,7 @@ The R scripts used in the preprint will be made public after peer-reviewed publi
 | **SDT 5mm}**  | ✅                                           | ✅                                                | ✅                                  | ❌ set threshold                 |
 | **SDT 10mm}** | ❌                                                    | ✅                                                | ✅                                  | ❌ set threshold                 |
 
-# Backbone model and evaluator
+# Backbone Model and Evaluator
 
 ```
 https://github.com/MIC-DKFZ/nnUNet.git
