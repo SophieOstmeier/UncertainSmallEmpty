@@ -1,0 +1,116 @@
+{
+    "author": "Fabian",
+    "description": "",
+    "id": "f0a1f80138ba",
+    "name": "",
+    "results": {
+        "all": [
+            {
+                "0": {
+                    "Avg. Surface Distance": 0.2331998682207751,
+                    "Dice": 0.9989578296071997,
+                    "Dice 0.0ml": 0.9989578296071997,
+                    "Dice 1ml": 0.9989578296071997,
+                    "Hausdorff Distance 95": 0.0,
+                    "Precision": 0.9999729977825923,
+                    "Recall": 0.9979447205299251,
+                    "Surface Dice at Tolerance 0mm": 0.9885121800697105,
+                    "Surface Dice at Tolerance 10mm": 0.9936300736817002,
+                    "Surface Dice at Tolerance 5mm": 0.990485821347704,
+                    "Volume Absolute Difference": 15.704266659686967,
+                    "Volume Reference": 7742.453645828977,
+                    "Volume Test": 7726.74937916929,
+                    "Volumetric Similarity": 0.9989848044120755
+                },
+                "1": {
+                    "Avg. Surface Distance": 10.862739067604545,
+                    "Dice": 0.1620039349296991,
+                    "Dice 0.0ml": 0.1620039349296991,
+                    "Dice 1ml": 0.1620039349296991,
+                    "Hausdorff Distance 95": 22.075038252158937,
+                    "Precision": 0.08919418758256274,
+                    "Recall": 0.8819226750261233,
+                    "Surface Dice at Tolerance 0mm": 0.13796794028591144,
+                    "Surface Dice at Tolerance 10mm": 0.5220084630754972,
+                    "Surface Dice at Tolerance 5mm": 0.2860675855040292,
+                    "Volume Absolute Difference": 15.704266659686967,
+                    "Volume Reference": 1.7669723347622628,
+                    "Volume Test": 17.471238994449227,
+                    "Volumetric Similarity": 0.18369403522241945
+                },
+                "reference": "Test_files_gt/NCCT_Test.nii.gz",
+                "test": "Test_files_segmentation/NCCT_Test.nii.gz"
+            }
+        ],
+        "mean": {
+            "0": {
+                "Avg. Surface Distance": 0.2331998682207751,
+                "Dice": 0.9989578296071997,
+                "Dice 0.0ml": 0.9989578296071997,
+                "Dice 1ml": 0.9989578296071997,
+                "Hausdorff Distance 95": 0.0,
+                "Precision": 0.9999729977825923,
+                "Recall": 0.9979447205299251,
+                "Surface Dice at Tolerance 0mm": 0.9885121800697105,
+                "Surface Dice at Tolerance 10mm": 0.9936300736817002,
+                "Surface Dice at Tolerance 5mm": 0.990485821347704,
+                "Volume Absolute Difference": 15.704266659686967,
+                "Volume Reference": 7742.453645828977,
+                "Volume Test": 7726.74937916929,
+                "Volumetric Similarity": 0.9989848044120755
+            },
+            "1": {
+                "Avg. Surface Distance": 10.862739067604545,
+                "Dice": 0.1620039349296991,
+                "Dice 0.0ml": 0.1620039349296991,
+                "Dice 1ml": 0.1620039349296991,
+                "Hausdorff Distance 95": 22.075038252158937,
+                "Precision": 0.08919418758256274,
+                "Recall": 0.8819226750261233,
+                "Surface Dice at Tolerance 0mm": 0.13796794028591144,
+                "Surface Dice at Tolerance 10mm": 0.5220084630754972,
+                "Surface Dice at Tolerance 5mm": 0.2860675855040292,
+                "Volume Absolute Difference": 15.704266659686967,
+                "Volume Reference": 1.7669723347622628,
+                "Volume Test": 17.471238994449227,
+                "Volumetric Similarity": 0.18369403522241945
+            }
+        },
+        "median": {
+            "0": {
+                "Avg. Surface Distance": 0.2331998682207751,
+                "Dice": 0.9989578296071997,
+                "Dice 0.0ml": 0.9989578296071997,
+                "Dice 1ml": 0.9989578296071997,
+                "Hausdorff Distance 95": 0.0,
+                "Precision": 0.9999729977825923,
+                "Recall": 0.9979447205299251,
+                "Surface Dice at Tolerance 0mm": 0.9885121800697105,
+                "Surface Dice at Tolerance 10mm": 0.9936300736817002,
+                "Surface Dice at Tolerance 5mm": 0.990485821347704,
+                "Volume Absolute Difference": 15.704266659686967,
+                "Volume Reference": 7742.453645828977,
+                "Volume Test": 7726.74937916929,
+                "Volumetric Similarity": 0.9989848044120755
+            },
+            "1": {
+                "Avg. Surface Distance": 10.862739067604545,
+                "Dice": 0.1620039349296991,
+                "Dice 0.0ml": 0.1620039349296991,
+                "Dice 1ml": 0.1620039349296991,
+                "Hausdorff Distance 95": 22.075038252158937,
+                "Precision": 0.08919418758256274,
+                "Recall": 0.8819226750261233,
+                "Surface Dice at Tolerance 0mm": 0.13796794028591144,
+                "Surface Dice at Tolerance 10mm": 0.5220084630754972,
+                "Surface Dice at Tolerance 5mm": 0.2860675855040292,
+                "Volume Absolute Difference": 15.704266659686967,
+                "Volume Reference": 1.7669723347622628,
+                "Volume Test": 17.471238994449227,
+                "Volumetric Similarity": 0.18369403522241945
+            }
+        }
+    },
+    "task": "",
+    "timestamp": "2022-09-30 12:50:55.484039"
+}
