@@ -10,16 +10,16 @@ setup(
     author_email='sostm@stanford.edu',
     description='Evaluation for Medical Image Segemantion Models for Uncertain, Small and Empty Reference Annotations'
     install_requires=[
-        "numpy"
-        "MedPy"
-        "scipy"
-        "pandas"
-        "SimpleITK"
-        "batchgenerators"
-        "nibabel"
-        "natsort"
-        "argparse"
-        "ctg-surface-distance"
+        "numpy",
+        "MedPy",
+        "scipy",
+        "pandas",
+        "SimpleITK",
+        "batchgenerators",
+        "nibabel",
+        "natsort",
+        "argparse",
+        "ctg-surface-distance",
         "openpyxl"
     ]
 )
