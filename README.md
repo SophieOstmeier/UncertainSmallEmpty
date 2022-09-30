@@ -27,6 +27,8 @@ pip install UncertainSmallEmpty/
 ```
  python3 evaluator_run.py Test_files_gt Test_files_segmentation -hidden -check
 ```
+The R scripts used in the preprint will be made public after peer-reviewed publication. These might help you to anaylse the behaviour of metrics on your data set.
+
 # Guideline
 | **Metric**    | **Independence from Volume of Reference Annotation** | **Consideration of Uncertainty in Reference Annotation** | **Reward of Volume and Location agreement** | **Reward of Absence Agreement** |
 |:-------------:|:----------------------------------------------------:|:---------------------------------------------------------:|:-------------------------------------------:|:-------------------------------:|
