@@ -8,7 +8,7 @@ setup(
     license='Apache License Version 2.0, January 2004',
     author='SophieOstmeier',
     author_email='sostm@stanford.edu',
-    description='Evaluation for Medical Image Segemantion Models for Uncertain, Small and Empty Reference Annotations'
+    description='Evaluation for Medical Image Segemantion Models for Uncertain, Small and Empty Reference Annotations',
     install_requires=[
         "numpy",
         "MedPy",
