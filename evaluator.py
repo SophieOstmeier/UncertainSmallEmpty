@@ -37,6 +37,8 @@ class Evaluator:
     """
 
     default_metrics = [
+        "LDR",
+        "CCR",
         "Dice",
         # # "Dice with Laplace smoothing 1",
         "Dice 0.0ml",
