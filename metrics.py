@@ -483,6 +483,9 @@ def hausdorff_distance_95(test=None, reference=None, confusion_matrix=None, nan_
 
 def avg_surface_distance(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, voxel_spacing=None,
                          connectivity=1, **kwargs):
+    """
+    metric.asd(test, reference, voxel_spacing, connectivity)
+    """
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -501,6 +504,9 @@ def avg_surface_distance(test=None, reference=None, confusion_matrix=None, nan_f
 
 def avg_surface_distance_symmetric(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True,
                                    voxel_spacing=None, connectivity=1, **kwargs):
+    """
+    metric.assd(test, reference, voxel_spacing, connectivity)
+    """
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -665,6 +671,9 @@ def malahanobis_distance(test=None, reference=None):
 
 def volume_test(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, nan_for_nonexisting=True,
                 **kwargs):
+    """
+    (tp + fp) * voxel_volume * 0.001
+    """
     x, y, z = voxel_spacing
     voxel_volume = x * y * z
 
@@ -678,7 +687,9 @@ def volume_test(test=None, reference=None, confusion_matrix=None, voxel_spacing=
 
 def volume_reference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, nan_for_nonexisting=True,
                      **kwargs):
-
+    """
+    (tp + fn) * voxel_volume * 0.001
+    """
     x, y, z = voxel_spacing
     voxel_volume = x * y * z
 
@@ -692,6 +703,10 @@ def volume_reference(test=None, reference=None, confusion_matrix=None, voxel_spa
 
 def abs_volume_difference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None,
                           nan_for_nonexisting=True, **kwargs):
+    """
+    abs((tp + fn) - (tp + fp)) * voxel_volume * 0.001
+    """
+    
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -704,6 +719,9 @@ def abs_volume_difference(test=None, reference=None, confusion_matrix=None, voxe
 
 def rel_volume_difference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None,
                           nan_for_nonexisting=True, **kwargs):
+    """
+    abs((tp + fn) - (tp + fp)) / (tp + fn)
+    """
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -734,7 +752,10 @@ def volumetric_similarity(test=None, reference=None, confusion_matrix=None, nan_
 
     return float(1 - (abs(fn - fp)/(2*tp + fp + fn)))
 
-def class_imbalance(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
+def prediction_imbalance(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
+    """ prediction_imbalance indicates over- or underestimation of the reference volume. This can be used to investigate whether the
+    postprocessing need to be adjusted when generating the mask.
+    """
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -750,6 +771,7 @@ def class_imbalance(test=None, reference=None, confusion_matrix=None, nan_for_no
     return (tp+fn)/(tn+fp+1e-8)
 
 def relative_tp(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
+    
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -765,6 +787,9 @@ def relative_tp(test=None, reference=None, confusion_matrix=None, nan_for_nonexi
     return tp/(tp+tn+fn+fp)
 
 def detection(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
+    """ CCR returns if a lesion is correctly detected or correctly not detected. In contrast to the LDR this 
+    metric can also be used in data set where instances have empty reference annotations.
+    """
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -779,6 +804,10 @@ def detection(test=None, reference=None, confusion_matrix=None, nan_for_nonexist
         return 0
 
 def ldr(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
+    """ LDR returns if a lesion is predicted or not. The average is then calculated over the whole validation/test set. 
+    This metric makes sense to use in a data set where every instance has a reference lesion.
+    """
+    
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -791,21 +820,9 @@ def ldr(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=Tr
         return 1
     elif test_empty:
         return 0
-def ostmeier(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
-    """ (2TP + FP)/(2*TP + FN + 2*FP)"""
-    if confusion_matrix is None:
-        confusion_matrix = ConfusionMatrix(test, reference)
-
-    tp, fp, tn, fn = confusion_matrix.get_matrix()
-    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
-
-    if reference_empty:
-        return float("NaN")
-
-    return float((2 * tp + fp) / (2*tp + fn + 2*  fp))
 
 def tp(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
-    """ (2TP + FP)/(2*TP + FN + 2*FP)"""
+    """ TP """
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -818,7 +835,7 @@ def tp(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=Tru
     return tp
 
 def fp(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
-    """ (2TP + FP)/(2*TP + FN + 2*FP)"""
+    """ FP """
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
@@ -832,12 +849,11 @@ def fp(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=Tru
 
 ALL_METRICS = {
     "TP":tp,
-    "relative FP":fp,
-    "Ostmeier": ostmeier,
+    "FP":fp,
     "CCR": detection,
     "LDR": ldr,
     "Relative True Positives": relative_tp,
-    "Class Imbalance": class_imbalance,
+    "Predition Imbalance": class_imbalance,
     "False Positive Rate": false_positive_rate,
     "Dice": dice_orig,
     "Dice with Laplace smoothing 1": dice_smooth_1,
