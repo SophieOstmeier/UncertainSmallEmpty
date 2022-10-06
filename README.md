@@ -41,16 +41,16 @@ The R scripts used in the preprint will be made public after peer-reviewed publi
 # Guideline
 | **Metric**    | **Independence from Volume of Reference Annotation** | **Consideration of Uncertainty in Reference Annotation** | **Reward of Volume and Location agreement** | **Reward of Absence Agreement** |
 |:-------------:|:----------------------------------------------------:|:---------------------------------------------------------:|:-------------------------------------------:|:-------------------------------:|
-| **VS**        | ✅   | ✅  | ❌  | ✅                      |
-| **AVD**       | ❌   | ✅  | ❌                                           | ❌ set threshold                 |
+| **Volumetric Similarity**        | ✅   | ✅  | ❌  | ✅                      |
+| **Absolute Volume Difference**       | ❌   | ✅  | ❌                                           | ❌ set threshold                 |
 | **Dice**      | ❌                                                    | ❌                                                         | ✅                                  | ❌  set threshold                |
 | **Recall**    | ❌                                                    | ❌                                                         | ✅                                  | ❌ set threshold                 |
 | **Precision** | ❌                                                    | ❌                                                         | ✅                                  | ❌ set threshold                 |
-| **HD 95**     | ✅                                           | ✅                                                | ❌                                           | ❌ set threshold                 |
-| **ASD**       | ❌                                                    | ❌                                                         | ✅                                  | ❌ set threshold                 |
-| **SDT 0mm}**  | ✅                                           | ❌                                                         | ✅                                  | ❌ set threshold                 |
-| **SDT 5mm}**  | ✅                                           | ✅                                                | ✅                                  | ❌ set threshold                 |
-| **SDT 10mm}** | ❌                                                    | ✅                                                | ✅                                  | ❌ set threshold                 |
+| **Hausdorff Distance 95**     | ✅                                           | ✅                                                | ❌                                           | ❌ set threshold                 |
+| **Average Surface Distance**       | ❌                                                    | ❌                                                         | ✅                                  | ❌ set threshold                 |
+| **Surface Dice at Tolerance 0mm}**  | ✅                                           | ❌                                                         | ✅                                  | ❌ set threshold                 |
+| **Surface Dice at Tolerance 5mm}**  | ✅                                           | ✅                                                | ✅                                  | ❌ set threshold                 |
+| **Surface Dice at Tolerance 10mm}** | ❌                                                    | ✅                                                | ✅                                  | ❌ set threshold                 |
 
 # Backbone Model and Evaluator
 
