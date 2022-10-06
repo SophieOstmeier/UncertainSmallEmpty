@@ -50,7 +50,7 @@ The R scripts used in the preprint will be made public after peer-reviewed publi
 | **Average Surface Distance**       | ❌                                                    | ❌                                                         | ✅                                  | ❌ set threshold                 |
 | **Surface Dice at Tolerance 0mm**  | ✅                                           | ❌                                                         | ✅                                  | ❌ set threshold                 |
 | **Surface Dice at Tolerance 5mm**  | ✅                                           | ✅                                                | ✅                                  | ❌ set threshold                 |
-| **Surface Dice at Tolerance 10mm** | ❌                                                    | ✅                                                | ✅                                  | ❌ set threshold                 |
+| **Surface Dice at Tolerance 10mm** | (❌)                                                    | ✅                                                | ✅                                  | ❌ set threshold                 |
 
 # Backbone Model and Evaluator
 
