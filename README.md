@@ -3,6 +3,8 @@
 You can use this evaluator to compare a directory of ground truth segmentations to a directory with manual or predicted segmentations in nii.gz format. 
 The ground truth segmentation has to match the corresponding manual or predicted segmentation in shape and filename. 
 
+The evaluator return a .xlsx und .csv file with all metrics for segmentation and detection/image-classification task (if a threshold was set). Please refer to the table under Recommondation for choosing a set of metrics that is clinically meaningful for your data set. 
+
 Please cite as
 
 ```
@@ -45,7 +47,7 @@ For more information see -h.
 
 The R scripts used in the preprint will be made public after peer-reviewed publication. These might help you to anaylse the behaviour of metrics on your data set.
 
-# Guideline
+# Recommendation
 | **Metric**    | **Independence from Volume of Reference Annotation** | **Consideration of Uncertainty in Reference Annotation** | **Reward of Volume and Location agreement** | **Reward of Absence Agreement** |
 |:-------------:|:----------------------------------------------------:|:---------------------------------------------------------:|:-------------------------------------------:|:-------------------------------:|
 | **Volumetric Similarity**        | ✅   | ✅  | ❌  | ✅                      |
