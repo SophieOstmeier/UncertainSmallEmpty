@@ -38,8 +38,8 @@ pip install -r requirements.txt
  python3 evaluator_run.py Test_files_gt Test_files_segmentation -number_classes 2 -threshold 1
 
 ```
-- threshold: Lower threshold in ml for the evaluator that you want set for your segmentation task, this is also the threshold for the detection evaluation
-- number_classes: this evaluator also works for more the two classes, the numer_classes always includes the background class
+- threshold (type: int): Lower threshold in ml for the evaluator that you want set for your segmentation task, this is also the threshold for the detection evaluation
+- number_classes (type: int): number of classes including background class
 
 For more information see -h.
 
