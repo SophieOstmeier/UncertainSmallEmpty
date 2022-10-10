@@ -137,9 +137,12 @@ def dice_smooth_1(test=None, reference=None, confusion_matrix=None, threshold=No
     reference_small = not volume_ref > threshold
     test_small = not volume_tes > threshold
 
+    if reference_small and test_small:
+        if nan_for_nonexisting:
+            return float("NaN")
+        else:
+            return 0.
     return float(((2. * tp) + 1) / ((2 * tp + fp + fn) + 1))
-
-
 
 def dice_th(test=None, reference=None, confusion_matrix=None,voxel_spacing=None, nan_for_nonexisting=True,threshold=None, **kwargs):
     """2TP / (2TP + FP + FN)"""
@@ -159,9 +162,11 @@ def dice_th(test=None, reference=None, confusion_matrix=None,voxel_spacing=None,
     test_small = not volume_tes > threshold
 
     if reference_small and test_small:
-        return float("NaN")
-    else:
-        return float(2. * tp / (2 * tp + fp + fn))
+        if nan_for_nonexisting:
+            return float("NaN")
+        else:
+            return 0.
+    return float(2. * tp / (2 * tp + fp + fn))
 
 
 def precision(test=None, reference=None, confusion_matrix=None, threshold=None,voxel_spacing=None, nan_for_nonexisting=True, **kwargs):
@@ -207,9 +212,7 @@ def sensitivity(test=None, reference=None, confusion_matrix=None,threshold=None,
             return float("NaN")
         else:
             return 0.
-    else:
-
-        return float(tp / (tp + fn))
+    return float(tp / (tp + fn))
 
 
 def recall(test=None, reference=None, confusion_matrix=None, threshold=None,voxel_spacing=None, nan_for_nonexisting=True, **kwargs):
