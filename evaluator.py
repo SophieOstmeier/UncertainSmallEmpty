@@ -37,13 +37,7 @@ class Evaluator:
     """
 
     default_metrics = [
-        "LDR",
-        "CCR",
         "Dice",
-        # # "Dice with Laplace smoothing 1",
-        "Dice 0.0ml",
-        "Dice 1ml",
-        # # "Dice 5ml",
         "Surface Dice at Tolerance 0mm",
         "Surface Dice at Tolerance 5mm",
         "Surface Dice at Tolerance 10mm",
@@ -51,16 +45,23 @@ class Evaluator:
         "Precision",
         "Recall",
         "Avg. Surface Distance",
-        # "Total Positives Test",
-        # "Total Positives Reference",
+        "Total Positives Test",
+        "Total Positives Reference",
         "Volume Reference",
         "Volume Test",
         "Volume Absolute Difference",
-        # "Volume Relative Difference",
+        "Volume Relative Difference",
         "Volumetric Similarity",
 ]
 
     default_advanced_metrics = [
+    ]
+
+    default_detection = [
+        "Detection TN",
+        "Detection TP",
+        "Detection FN",
+        "Detection FP"
     ]
 
     def __init__(self,
@@ -69,8 +70,10 @@ class Evaluator:
                  labels=None,
                  metrics=None,
                  advanced_metrics=None,
+                 threshold=None,
                  nan_for_nonexisting=True):
 
+        self.threshold = None
         self.test = None
         self.reference = None
         self.confusion_matrix = ConfusionMatrix()
@@ -94,8 +97,17 @@ class Evaluator:
             for m in advanced_metrics:
                 self.advanced_metrics.append(m)
 
+
+        if threshold is not None:
+            self.set_threshold(threshold)
+
+        # else:
+        #      for m in detection:
+        #          self.detection_metric.append(m)
+
         self.set_reference(reference)
         self.set_test(test)
+
         if labels is not None:
             self.set_labels(labels)
         else:
@@ -127,7 +139,17 @@ class Evaluator:
             self.labels = labels
         else:
             raise TypeError("Can only handle dict, list, tuple, set & numpy array, but input is of type {}".format(type(labels)))
+    
+    def set_threshold(self, threshold):
+        """Set the threshold.
+        :param threshold= integer in ml to switch to detection task"""
 
+        if isinstance(threshold, int):
+            self.threshold = threshold
+            self.detection = True
+        else:
+            raise TypeError("Can integer but input is of type {}".format(type(threshold)))
+    
     def construct_labels(self):
         """Construct label set from unique entries in segmentations."""
 
@@ -155,7 +177,7 @@ class Evaluator:
         if metric not in self.metrics:
             self.metrics.append(metric)
 
-    def evaluate(self, test=None, reference=None, advanced=False, **metric_kwargs):
+    def evaluate(self, test=None, reference=None,threshold=None, advanced=False, **metric_kwargs):
         """Compute metrics for segmentations."""
         if test is not None:
             self.set_test(test)
@@ -163,6 +185,8 @@ class Evaluator:
         if reference is not None:
             self.set_reference(reference)
 
+        if threshold is not None:
+            self.set_threshold(threshold)
 
         if self.test is None or self.reference is None:
             raise ValueError("Need both test, reference segmentations.")
@@ -174,7 +198,7 @@ class Evaluator:
         # get functions for evaluation
         # somewhat convoluted, but allows users to define additional metrics
         # on the fly, e.g. inside an IPython console
-        _funcs = {m: ALL_METRICS[m] for m in self.metrics + self.advanced_metrics}
+        _funcs = {m: ALL_METRICS[m] for m in self.metrics + self.advanced_metrics+ self.default_detection}
         frames = inspect.getouterframes(inspect.currentframe())
         for metric in self.metrics:
             for f in frames:
@@ -194,6 +218,8 @@ class Evaluator:
         eval_metrics = self.metrics
         if advanced:
             eval_metrics += self.advanced_metrics
+        if isinstance(self.threshold, int):
+            eval_metrics += self.default_detection
 
         if isinstance(self.labels, dict):
 
@@ -226,6 +252,7 @@ class Evaluator:
                 for metric in eval_metrics:
                     self.result[k][metric] = _funcs[metric](confusion_matrix=self.confusion_matrix,
                                                             nan_for_nonexisting=self.nan_for_nonexisting,
+                                                            threshold=self.threshold,
                                                             **metric_kwargs)
 
         return self.result
@@ -330,19 +357,21 @@ def format_dict_for_excel(dict_scores):
     return list_cases
 
 def aggregate_scores(test_ref_pair,
-                     evaluator=NiftiEvaluator,
+                     threshold=None,
                      labels=None,
+                     evaluator=NiftiEvaluator,
                      nanmean=True,
                      json_output_file=None,
                      excel_output_file=None,
                      json_name="",
                      json_description="",
-                     json_author="Fabian",
+                     json_author="Sophie",
                      json_task="",
                      num_threads=2,
                      **metric_kwargs):
     """
     test = predicted image
+    :param threshold: in ml for detection task
     :param test_ref_triple:
     :param evaluator:
     :param labels: must be a dict of int-> str or a list of int
@@ -361,11 +390,17 @@ def aggregate_scores(test_ref_pair,
 
     if labels is not None:
         evaluator.set_labels(labels)
+    
+    if threshold is not None:
+        evaluator.set_threshold(threshold)
+
+    detection_scores = evaluator.default_detection
 
     all_scores = OrderedDict()
     all_scores["all"] = []
     all_scores["mean"] = OrderedDict()
     all_scores["median"] = OrderedDict()
+    all_scores["detection"] = OrderedDict()
 
     test = [i[0] for i in test_ref_pair]
     ref = [i[1] for i in test_ref_pair]
@@ -384,9 +419,10 @@ def aggregate_scores(test_ref_pair,
             if label not in all_scores["mean"]:
                 all_scores["mean"][label] = OrderedDict()
             for score, value in score_dict.items():
-                if score not in all_scores["mean"][label]:
-                    all_scores["mean"][label][score] = []
-                all_scores["mean"][label][score].append(value)
+                if score not in detection_scores:
+                    if score not in all_scores["mean"][label]:
+                        all_scores["mean"][label][score] = []
+                    all_scores["mean"][label][score].append(value)
 
         for label, score_dict in all_res[i].items():
             if label in ("test", "reference"):
@@ -394,9 +430,21 @@ def aggregate_scores(test_ref_pair,
             if label not in all_scores["median"]:
                 all_scores["median"][label] = OrderedDict()
             for score, value in score_dict.items():
-                if score not in all_scores["median"][label]:
-                    all_scores["median"][label][score] = []
-                all_scores["median"][label][score].append(value)
+                if score not in detection_scores:
+                    if score not in all_scores["median"][label]:
+                        all_scores["median"][label][score] = []
+                    all_scores["median"][label][score].append(value)
+
+        for label, score_dict in all_res[i].items():
+            if label in ("test", "reference"):
+                continue
+            if label not in all_scores["detection"]:
+                all_scores["detection"][label] = OrderedDict()
+            for score, value in score_dict.items():
+                if score in detection_scores:
+                    if score not in all_scores["detection"][label]:
+                        all_scores["detection"][label][score] = []
+                    all_scores["detection"][label][score].append(value)
 
     for label in all_scores["mean"]:
         for score in all_scores["mean"][label]:
@@ -411,6 +459,30 @@ def aggregate_scores(test_ref_pair,
                 all_scores["median"][label][score] = float(np.nanmedian(all_scores["median"][label][score]))
             else:
                 all_scores["median"][label][score] = float(np.median(all_scores["median"][label][score]))
+
+    for label in all_scores["detection"]:
+        for score in all_scores["detection"][label]:
+            if nanmean:
+                all_scores["detection"][label][score] = float(np.nansum(all_scores["detection"][label][score]))
+            else:
+                all_scores["detection"][label][score] = float(np.sum(all_scores["detection"][label][score]))
+
+    # calculate image classification metric
+    for label in all_scores["detection"]:
+        tp = float(all_scores["detection"][label]["Detection TP"])
+        tn = float(all_scores["detection"][label]["Detection TN"])
+        fp = float(all_scores["detection"][label]["Detection FP"])
+        fn = float(all_scores["detection"][label]["Detection FN"])
+        # positive reference cases
+        all_scores["detection"][label]["Positive reference cases"] = tp+fn
+        # negative reference cases
+        all_scores["detection"][label]["Negative reference cases"] = tn+fp
+        # calculate sensitivity
+        all_scores["detection"][label]["Detection Sensitivity/Recall"] = tp/(tp+fn+1e-8)
+        # calculate kappa
+        all_scores["detection"][label]["Detection Precision"] = tp/(tp+fp+1e-8)
+        # calculate specificity
+        all_scores["detection"][label]["Detection Specificity"] = tn/(tn+fp+1e-8)
 
     # save to file if desired
     # we create a hopefully unique id by hashing the entire output dictionary
@@ -428,58 +500,17 @@ def aggregate_scores(test_ref_pair,
         df1 = pd.DataFrame(format_dict_for_excel(all_scores["all"]))
         df2 = pd.DataFrame(all_scores["mean"])
         df3 = pd.DataFrame(all_scores["median"])
+        df4 = pd.DataFrame(all_scores["detection"])
         with pd.ExcelWriter(excel_output_file) as writer:
             df1.to_excel(writer, sheet_name = 'all' )
             df2.to_excel(writer, sheet_name = 'mean')
             df3.to_excel(writer, sheet_name = 'median')
+            df4.to_excel(writer, sheet_name = 'detection')
 
     return all_scores
 
 
-def aggregate_scores_for_experiment(score_file,
-                                    labels=None,
-                                    metrics=Evaluator.default_metrics,
-                                    nanmean=True,
-                                    json_output_file=None,
-                                    json_name="",
-                                    json_description="",
-                                    json_author="Fabian",
-                                    json_task=""):
-
-    scores = np.load(score_file)
-    scores_mean = scores.mean(0)
-    if labels is None:
-        labels = list(map(str, range(scores.shape[1])))
-
-    results = []
-    results_mean = OrderedDict()
-    for i in range(scores.shape[0]):
-        results.append(OrderedDict())
-        for l, label in enumerate(labels):
-            results[-1][label] = OrderedDict()
-            results_mean[label] = OrderedDict()
-            for m, metric in enumerate(metrics):
-                results[-1][label][metric] = float(scores[i][l][m])
-                results_mean[label][metric] = float(scores_mean[l][m])
-
-    json_dict = OrderedDict()
-    json_dict["name"] = json_name
-    json_dict["description"] = json_description
-    timestamp = datetime.today()
-    json_dict["timestamp"] = str(timestamp)
-    json_dict["task"] = json_task
-    json_dict["author"] = json_author
-    json_dict["results"] = {"all": results, "mean": results_mean}
-    json_dict["id"] = hashlib.md5(json.dumps(json_dict).encode("utf-8")).hexdigest()[:12]
-    if json_output_file is not None:
-        json_output_file = open(json_output_file, "w")
-        json.dump(json_dict, json_output_file, indent=4, separators=(",", ": "))
-        json_output_file.close()
-
-    return json_dict
-
-
-def evaluate_folder(folder_with_gts: str, folder_with_predictions: str, labels: tuple, **metric_kwargs):
+def evaluate_folder(folder_with_gts: str, folder_with_predictions: str,th: int, labels: tuple, **metric_kwargs):
     """
     writes a summary.json to folder_with_predictions
     :param folder_with_gts: folder where the ground truth segmentations are saved. Must be nifti files.
@@ -487,41 +518,26 @@ def evaluate_folder(folder_with_gts: str, folder_with_predictions: str, labels: 
     :param labels: tuple of int with the labels in the dataset. For example (0, 1, 2, 3) for Task001_BrainTumour.
     :return:
     """
+    if isinstance(th, int):
+        threshold = th
+    else:
+        threshold = None
+
     files_gt_shape = subfiles(folder_with_gts,suffix=".nii.gz", join=True, sort=True)
     files_pred_shape = subfiles(folder_with_predictions, suffix=".nii.gz", join=True, sort=True)
     for i, a in zip(files_gt_shape,files_pred_shape):
         shp_gt = sitk.ReadImage(i).GetSize()
         shp_pred = sitk.ReadImage(a).GetSize()
         if shp_gt != shp_pred:
-            print(f'shape_gt {i}: {shp_gt} spape_pred {a}: {shp_pred}')
+            print(f'Shape mismatch: shape_gt {i}: {shp_gt} spape_pred {a}: {shp_pred}')
     files_gt = subfiles(folder_with_gts,suffix=".nii.gz", join=False, sort=True)
     files_pred = subfiles(folder_with_predictions, suffix=".nii.gz", join=False, sort=True)
     assert all([i in files_pred for i in files_gt]), "files missing in folder_with_predictions"
     assert all([i in files_gt for i in files_pred]), "files missing in folder_with_gts"
     test_ref_pair = [(join(folder_with_predictions, i), join(folder_with_gts, i)) for i in files_pred]
-    res = aggregate_scores(test_ref_pair, json_output_file=join(folder_with_predictions, "summary.json"),
+    res = aggregate_scores(test_ref_pair, threshold=threshold,
+                           json_output_file=join(folder_with_predictions, "summary.json"),
                            excel_output_file=join(folder_with_predictions, "summary.xlsx"),
                            num_threads=8, labels=labels, **metric_kwargs)
     return res
 
-
-def nnunet_evaluate_folder():
-    import argparse
-    parser = argparse.ArgumentParser("Evaluates the segmentations located in the folder pred. Output of this script is "
-                                     "a json file. At the very bottom of the json file is going to be a 'mean' "
-                                     "entry with averages metrics across all cases")
-    parser.add_argument('-ref', required=True, type=str, help="Folder containing the reference segmentations in nifti "
-                                                              "format.")
-    parser.add_argument('-pred', required=True, type=str, help="Folder containing the predicted segmentations in nifti "
-                                                               "format. File names must match between the folders!")
-    parser.add_argument('-l', nargs='+', type=int, required=True, help="List of label IDs (integer values) that should "
-                                                                       "be evaluated. Best practice is to use all int "
-                                                                       "values present in the dataset, so for example "
-                                                                       "for LiTS the labels are 0: background, 1: "
-                                                                       "liver, 2: tumor. So this argument "
-                                                                       "should be -l 1 2. You can if you want also "
-                                                                       "evaluate the background label (0) but in "
-                                                                       "this case that would not give any useful "
-                                                                       "information.")
-    args = parser.parse_args()
-    return evaluate_folder(args.ref, args.pred, args.l)
