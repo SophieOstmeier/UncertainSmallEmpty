@@ -37,6 +37,11 @@ pip install -r requirements.txt
  python3 evaluator_run.py Test_files_gt Test_files_segmentation -number_classes 2 -threshold 1
 
 ```
+- threshold: Lower threshold in ml for the evaluator that you want set for your segmentation task, this is also the threshold for the detection evaluation
+- number_classes: this evaluator also works for more the two classes, the numer_classes always includes the background class
+
+For more information see -h.
+
 The R scripts used in the preprint will be made public after peer-reviewed publication. These might help you to anaylse the behaviour of metrics on your data set.
 
 # Guideline
