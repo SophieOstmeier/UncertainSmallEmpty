@@ -34,7 +34,8 @@ pip install -r requirements.txt
 # Usage
 
 ```
- python3 evaluator_run.py Test_files_gt Test_files_segmentation -hidden -check
+ python3 evaluator_run.py Test_files_gt Test_files_segmentation -number_classes 2 -threshold 1
+
 ```
 The R scripts used in the preprint will be made public after peer-reviewed publication. These might help you to anaylse the behaviour of metrics on your data set.
 
