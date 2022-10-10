@@ -506,11 +506,11 @@ def aggregate_scores(test_ref_pair,
             df2.to_excel(writer, sheet_name = 'mean')
             df3.to_excel(writer, sheet_name = 'median')
             df4.to_excel(writer, sheet_name = 'detection')
-
+        print(f'results can be found here: {excel_output_file}')
     return all_scores
 
 
-def evaluate_folder(folder_with_gts: str, folder_with_predictions: str,th: int, labels: tuple, **metric_kwargs):
+def evaluate_folder(folder_with_gdts: str, folder_with_predictions: str,th: int, labels: tuple, **metric_kwargs):
     """
     writes a summary.json to folder_with_predictions
     :param folder_with_gts: folder where the ground truth segmentations are saved. Must be nifti files.
