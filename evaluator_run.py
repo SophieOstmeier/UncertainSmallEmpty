@@ -85,7 +85,8 @@ if __name__ == '__main__':
     threshold = args.threshold
     if isinstance(threshold, int):
         th = threshold
-        print(f'I use a threshold of {th} ml. Below this threshold maks are considered to be empty. The evaluation a detection task will be initialized.')
+        print(f'I use a threshold of {th} ml. Below this threshold maks are considered empty. The evaluation of a '
+              f'detection task will be initialized.')
     else:
         th = None
     # segmentation classes
@@ -108,6 +109,6 @@ if __name__ == '__main__':
     time_start = process_time()
     evaluate_folder(folder_with_gts, folder_with_predictions, th, classes)
     time_end = process_time()
-    print('Time needed:',(time_end-time_start))
+    print(f'Time needed: {round(time_end-time_start,4)} sec')
     print('Done')
 
