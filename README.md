@@ -60,12 +60,3 @@ The R scripts used in the preprint will be made public after peer-reviewed publi
 | **Surface Dice at Tolerance 5mm**  | ✅                                           | ✅                                                | ✅                                  | ❌ set threshold                 |
 | **Surface Dice at Tolerance 10mm** | (❌)                                                    | ✅                                                | ✅                                  | ❌ set threshold                 |
 
-# Backbone Model and Evaluator
-
-```
-https://github.com/MIC-DKFZ/nnUNet.git
-```
-```
-Isensee, F., Jaeger, P. F., Kohl, S. A., Petersen, J., & Maier-Hein, K. H. (2020). nnU-Net: a self-configuring method 
-for deep learning-based biomedical image segmentation. Nature Methods, 1-9.
-```
