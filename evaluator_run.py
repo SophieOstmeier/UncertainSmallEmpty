@@ -109,6 +109,6 @@ if __name__ == '__main__':
     time_start = process_time()
     evaluate_folder(folder_with_gts, folder_with_predictions, th, classes)
     time_end = process_time()
-    print(f'Time needed: {round(time_end-time_start,4)} sec')
+    print(f'Time needed: {round(time_end-time_start,4)} min')
     print('Done')
 
