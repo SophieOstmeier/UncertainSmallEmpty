@@ -18,6 +18,7 @@ import numpy as np
 import nibabel as nib
 import argparse
 from evaluator import evaluate_folder
+from time import process_time
 
 
 def check_shape2(folder_with_predictions, folder_with_gts):
@@ -84,10 +85,12 @@ if __name__ == '__main__':
     threshold = args.threshold
     if isinstance(threshold, int):
         th = threshold
+        print(f'I use a threshold of {th} ml. Below this threshold maks are considered to be empty. The evaluation a detection task will be initialized.')
     else:
         th = None
     # segmentation classes
     classes = tuple(range(int(args.number_classes)))
+    print(f'I use classes {classes}')
 
     # checking for hidden files and dimension agreement
     if args.hidden:
@@ -102,5 +105,9 @@ if __name__ == '__main__':
     ################# test end ###################
 
     # run
+    time_start = process_time()
     evaluate_folder(folder_with_gts, folder_with_predictions, th, classes)
+    time_end = process_time()
+    print('Time needed:',(time_end-time_start))
+    print('Done')
 
