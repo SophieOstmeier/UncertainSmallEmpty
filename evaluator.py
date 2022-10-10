@@ -26,6 +26,7 @@ from metrics import ConfusionMatrix, ALL_METRICS
 from batchgenerators.utilities.file_and_folder_operations import save_json, subfiles, join
 from flatten_dict import flatten
 from collections import OrderedDict
+import datetime
 
 
 
@@ -523,6 +524,8 @@ def evaluate_folder(folder_with_gts: str, folder_with_predictions: str,th: int, 
     else:
         threshold = None
 
+    time = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+
     files_gt_shape = subfiles(folder_with_gts,suffix=".nii.gz", join=True, sort=True)
     files_pred_shape = subfiles(folder_with_predictions, suffix=".nii.gz", join=True, sort=True)
     for i, a in zip(files_gt_shape,files_pred_shape):
@@ -536,8 +539,8 @@ def evaluate_folder(folder_with_gts: str, folder_with_predictions: str,th: int, 
     assert all([i in files_gt for i in files_pred]), "files missing in folder_with_gts"
     test_ref_pair = [(join(folder_with_predictions, i), join(folder_with_gts, i)) for i in files_pred]
     res = aggregate_scores(test_ref_pair, threshold=threshold,
-                           json_output_file=join(folder_with_predictions, "summary.json"),
-                           excel_output_file=join(folder_with_predictions, "summary.xlsx"),
+                           json_output_file=join(folder_with_predictions, f"summary_{time}.json"),
+                           excel_output_file=join(folder_with_predictions, f"summary_{time}.xlsx"),
                            num_threads=8, labels=labels, **metric_kwargs)
     return res
 
