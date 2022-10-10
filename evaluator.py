@@ -26,7 +26,6 @@ from metrics import ConfusionMatrix, ALL_METRICS
 from batchgenerators.utilities.file_and_folder_operations import save_json, subfiles, join
 from flatten_dict import flatten
 from collections import OrderedDict
-import datetime
 
 
 
