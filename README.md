@@ -31,7 +31,6 @@ Performance metrics for medical image segmentation models are used to measure ag
 ```
 git clone https://github.com/SophieOstmeier/UncertainSmallEmpty.git
 cd UncertainSmallEmpty
-pip install UncertainSmallEmpty
 pip install -r requirements.txt
 ```
 # Usage
