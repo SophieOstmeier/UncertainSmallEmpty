@@ -9,3 +9,4 @@ natsort~=8.2.0
 argparse~=1.4.0
 ctg-surface-distance~=0.1
 openpyxl~=3.0.10
+flatten-dict~=0.4.2
