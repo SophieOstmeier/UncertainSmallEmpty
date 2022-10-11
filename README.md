@@ -1,9 +1,13 @@
-# UncertainSmallEmpty
+# UncertainSmallEmpty Reference Annotations
 
-You can use this evaluator to compare a directory of ground truth segmentations to a directory with manual or predicted segmentations in nii.gz format. 
+Uncertain: inter-expert variability (can be quantified by comparing segmentations of two experts with this evaluator)
+Small: approx. 1% of the relevent body cavity or organ
+Empty: np.sum(reference_annotation) = 0 or below threshold
+
+You can use this evaluator to compare a directory of ground truth segmentations (binary or multiclass) to a directory with manual or predicted segmentations in nii.gz format. 
 The ground truth segmentation has to match the corresponding manual or predicted segmentation in shape and filename. 
 
-The evaluator return a .xlsx und .csv file with all metrics for segmentation and detection/image-classification task (if a threshold was set). Please refer to the table under Recommondation for choosing a set of metrics that is clinically meaningful for your data set. 
+The evaluator returns a .xlsx und .csv file with all metrics for segmentation and detection/image-classification task (if a threshold was set). Please refer to the table below to choose a set of metrics that is clinically meaningful for your data set. 
 
 Please cite as
 
