@@ -22,8 +22,8 @@ from time import process_time
 
 
 def check_shape2(folder_with_predictions, folder_with_gts):
-    list_p = subfiles(folder_with_predictions, sort=True)
-    list_gts = subfiles(folder_with_gts, sort=True)
+    list_p = subfiles(folder_with_predictions, suffix='nii.gz',sort=True)
+    list_gts = subfiles(folder_with_gts, suffix='nii.gz',sort=True)
     list_p_shp = []
     count = 0
     fls = 0
