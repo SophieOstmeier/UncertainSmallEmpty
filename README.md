@@ -1,8 +1,13 @@
 # UncertainSmallEmpty Reference Annotations
-
+<ul>
 Uncertain: inter-expert variability (can be quantified by comparing segmentations of two experts with this evaluator)
+</ul>
+<ul>
 Small: approx. 1% of the relevent body cavity or organ
+</ul>
+<ul>
 Empty: np.sum(reference_annotation) = 0 or below threshold
+</ul>
 
 You can use this evaluator to compare a directory of ground truth segmentations (binary or multiclass) to a directory with manual or predicted segmentations in nii.gz format. 
 The ground truth segmentation has to match the corresponding manual or predicted segmentation in shape and filename. 
