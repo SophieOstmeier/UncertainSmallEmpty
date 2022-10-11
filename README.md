@@ -47,7 +47,7 @@ For more information see -h.
 The R scripts used in the preprint will be made public after peer-reviewed publication. These might help you to anaylse the behaviour of metrics on your data set.
 
 # Recommendation
-| **Metric**    | **Independence from Volume of Reference Annotation** | **Consideration of Uncertainty in Reference Annotation** | **Reward of Volume and Location agreement** | **Reward of Absence Agreement** |
+| **Metric**    | **Independence from Volume of Reference Annotation** | **Consideration of Uncertainty in Reference Annotation** | **Evaluation of Volume and Location agreement** | **Reward of Absence Agreement** |
 |:-------------:|:----------------------------------------------------:|:---------------------------------------------------------:|:-------------------------------------------:|:-------------------------------:|
 | **Volumetric Similarity**        | ✅   | ✅  | ❌  | ✅                      |
 | **Absolute Volume Difference**       | ❌   | ✅  | ❌                                           | ❌ set threshold                 |
