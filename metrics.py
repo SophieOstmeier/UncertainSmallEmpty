@@ -830,18 +830,27 @@ def detection_fn(test=None, reference=None, confusion_matrix=None, threshold=Non
     else:
         return 0
 
-def ldr(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
+def ldr(test=None, reference=None, confusion_matrix=None,threshold=None, voxel_spacing=None, nan_for_nonexisting=True, **kwargs):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference)
 
     tp, fp, tn, fn = confusion_matrix.get_matrix()
-    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
+    #test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
 
-    if reference_empty:
+    x, y, z = voxel_spacing
+    voxel_volume = x * y * z
+
+    volume_ref = (tp + fn) * voxel_volume * 0.001
+    volume_tes = (tp + fp) * voxel_volume * 0.001
+
+    reference_small = not volume_ref > threshold
+    test_small = not volume_tes > threshold
+
+    if reference_small:
         return float("NaN")
-    elif (tp+fp) > 0:
+    elif (tp+fp) > threshold:
         return 1
-    elif test_empty:
+    elif test_small:
         return 0
 
 def class_imbalance_alpha(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
@@ -946,8 +955,8 @@ ALL_METRICS = {
     "Volume Absolute Difference": abs_volume_difference,
     "Volume Relative Difference": rel_volume_difference,
     "Volumetric Similarity": volumetric_similarity,
-    "Detection TN":detection_tn,
-    "Detection TP":detection_tp,
-    "Detection FN":detection_fn,
-    "Detection FP":detection_fp
+    "Image-level TN":detection_tn,
+    "Image-level TP": detection_tp,
+    "Image-level FN":detection_fn,
+    "Image-level FP":detection_fp
 }

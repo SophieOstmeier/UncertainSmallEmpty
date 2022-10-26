@@ -17,6 +17,7 @@ import collections
 import inspect
 import json
 import hashlib
+import sys
 from datetime import datetime
 from multiprocessing.pool import Pool
 import numpy as np
@@ -26,6 +27,8 @@ from metrics import ConfusionMatrix, ALL_METRICS
 from batchgenerators.utilities.file_and_folder_operations import save_json, subfiles, join
 from flatten_dict import flatten
 from collections import OrderedDict
+from sklearn.metrics import roc_curve,roc_auc_score, plot_roc_curve
+import matplotlib.pyplot as plt
 
 
 
@@ -58,10 +61,12 @@ class Evaluator:
     ]
 
     default_detection = [
-        "Detection TN",
-        "Detection TP",
-        "Detection FN",
-        "Detection FP"
+        "Image-level TN",
+        "Image-level TP",
+        "Image-level FN",
+        "Image-level FP",
+        "CCR",
+        "LDR",
     ]
 
     def __init__(self,
@@ -371,7 +376,7 @@ def aggregate_scores(test_ref_pair,
                      **metric_kwargs):
     """
     test = predicted image
-    :param threshold: in ml for detection task
+    :param threshold: in ml for Image-level task
     :param test_ref_triple:
     :param evaluator:
     :param labels: must be a dict of int-> str or a list of int
@@ -400,7 +405,7 @@ def aggregate_scores(test_ref_pair,
     all_scores["all"] = []
     all_scores["mean"] = OrderedDict()
     all_scores["median"] = OrderedDict()
-    all_scores["detection"] = OrderedDict()
+    all_scores["image-level classification"] = OrderedDict()
 
     test = [i[0] for i in test_ref_pair]
     ref = [i[1] for i in test_ref_pair]
@@ -438,13 +443,13 @@ def aggregate_scores(test_ref_pair,
         for label, score_dict in all_res[i].items():
             if label in ("test", "reference"):
                 continue
-            if label not in all_scores["detection"]:
-                all_scores["detection"][label] = OrderedDict()
+            if label not in all_scores["image-level classification"]:
+                all_scores["image-level classification"][label] = OrderedDict()
             for score, value in score_dict.items():
                 if score in detection_scores:
-                    if score not in all_scores["detection"][label]:
-                        all_scores["detection"][label][score] = []
-                    all_scores["detection"][label][score].append(value)
+                    if score not in all_scores["image-level classification"][label]:
+                        all_scores["image-level classification"][label][score] = []
+                    all_scores["image-level classification"][label][score].append(value)
 
     for label in all_scores["mean"]:
         for score in all_scores["mean"][label]:
@@ -460,29 +465,52 @@ def aggregate_scores(test_ref_pair,
             else:
                 all_scores["median"][label][score] = float(np.median(all_scores["median"][label][score]))
 
-    for label in all_scores["detection"]:
-        for score in all_scores["detection"][label]:
+    for label in all_scores["image-level classification"]:
+        for score in all_scores["image-level classification"][label]:
             if nanmean:
-                all_scores["detection"][label][score] = float(np.nansum(all_scores["detection"][label][score]))
+                if score == 'LDR' or score == 'CCR':
+                    all_scores["image-level classification"][label][score] = float(np.nanmean(all_scores["image-level classification"][label][score]))
+                else:
+                    all_scores["image-level classification"][label][score] = float(np.nansum(all_scores["image-level classification"][label][score]))
             else:
-                all_scores["detection"][label][score] = float(np.sum(all_scores["detection"][label][score]))
-
+                if score == 'LDR' or score == 'CCR':
+                    all_scores["image-level classification"][label][score] = float(np.mean(all_scores["image-level classification"][label][score]))
+                else:
+                    all_scores["image-level classification"][label][score] = float(np.sum(all_scores["image-level classification"][label][score]))
     # calculate image classification metric
-    for label in all_scores["detection"]:
-        tp = float(all_scores["detection"][label]["Detection TP"])
-        tn = float(all_scores["detection"][label]["Detection TN"])
-        fp = float(all_scores["detection"][label]["Detection FP"])
-        fn = float(all_scores["detection"][label]["Detection FN"])
+    for label in all_scores["image-level classification"]:
+        tp = float(all_scores["image-level classification"][label]["Image-level TP"])
+        tn = float(all_scores["image-level classification"][label]["Image-level TN"])
+        fp = float(all_scores["image-level classification"][label]["Image-level FP"])
+        fn = float(all_scores["image-level classification"][label]["Image-level FN"])
         # positive reference cases
-        all_scores["detection"][label]["Positive reference cases"] = tp+fn
+        all_scores["image-level classification"][label]["Positive reference studies"] = tp + fn
         # negative reference cases
-        all_scores["detection"][label]["Negative reference cases"] = tn+fp
+        all_scores["image-level classification"][label]["Negative reference studies"] = tn + fp
         # calculate sensitivity
-        all_scores["detection"][label]["Detection Sensitivity/Recall"] = tp/(tp+fn+1e-8)
-        # calculate kappa
-        all_scores["detection"][label]["Detection Precision"] = tp/(tp+fp+1e-8)
+        all_scores["image-level classification"][label]["image-level Sensitivity/TPR"] = tp / (tp + fn + 1e-8)
+        # calculate Precision
+        all_scores["image-level classification"][label]["image-level Precision"] = tp / (tp + fp + 1e-8)
         # calculate specificity
-        all_scores["detection"][label]["Detection Specificity"] = tn/(tn+fp+1e-8)
+        all_scores["image-level classification"][label]["image-level Specificity"] = tn / (tn + fp + 1e-8)
+        # calculate specificity
+        all_scores["image-level classification"][label]["image-level FPR"] = tp / (tp + fn + 1e-8)
+        # calculate AUC for label > 0
+        if int(label) > 0:
+            y_true = np.array([i[label]['Volume Reference'] for i in all_scores["all"]])
+            print(y_true)
+            y_true = (y_true > threshold) * 1
+            # y_true[y_true > threshold] = 0
+            # y_true[y_true < threshold] = 1
+            y_score = np.array([i[label]['Volume Test'] for i in all_scores["all"]])
+            print(y_true)
+            print(y_score)
+            all_scores["image-level classification"][label]["image-level AUC"] = roc_auc_score(y_true,y_score)
+            print(all_scores["image-level classification"][label]["image-level AUC"] )
+            #plot_roc_curve(y_true, y_score)
+            #plt.show()
+            #print(all_scores["image-level classification"][label]["image-level AUC"])
+            #sys.exit()
 
     # save to file if desired
     # we create a hopefully unique id by hashing the entire output dictionary
@@ -500,17 +528,17 @@ def aggregate_scores(test_ref_pair,
         df1 = pd.DataFrame(format_dict_for_excel(all_scores["all"]))
         df2 = pd.DataFrame(all_scores["mean"])
         df3 = pd.DataFrame(all_scores["median"])
-        df4 = pd.DataFrame(all_scores["detection"])
+        df4 = pd.DataFrame(all_scores["image-level classification"])
         with pd.ExcelWriter(excel_output_file) as writer:
             df1.to_excel(writer, sheet_name = 'all' )
             df2.to_excel(writer, sheet_name = 'mean')
             df3.to_excel(writer, sheet_name = 'median')
-            df4.to_excel(writer, sheet_name = 'detection')
+            df4.to_excel(writer, sheet_name = 'image-level classification')
         print(f'results can be found here: {excel_output_file}')
     return all_scores
 
 
-def evaluate_folder(folder_with_gdts: str, folder_with_predictions: str,th: int, labels: tuple, **metric_kwargs):
+def evaluate_folder(folder_with_gts: str, folder_with_predictions: str,th: int, labels: tuple, **metric_kwargs):
     """
     writes a summary.json to folder_with_predictions
     :param folder_with_gts: folder where the ground truth segmentations are saved. Must be nifti files.

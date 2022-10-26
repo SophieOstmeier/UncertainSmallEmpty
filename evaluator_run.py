@@ -64,7 +64,7 @@ if __name__ == '__main__':
                         help="Path to folder with the segmentation you would like to compare to the ground truth segmentations. "
                              "Must be in in .nii.gz format."
                              "The filename has to be the same as the filename of the corresponding gt.")
-    parser.add_argument("-number_classes", required=False, default=1,
+    parser.add_argument("-number_classes", required=False, default=1,type=int,
                         help="number of segmentation classes including background class, for example '2' for binary"
                              "segmentation task")
     parser.add_argument("-threshold", required=False, default=False, type=int,
@@ -90,7 +90,9 @@ if __name__ == '__main__':
     else:
         th = None
     # segmentation classes
-    classes = tuple(range(int(args.number_classes)))
+    number_classes = args.number_classes
+    assert isinstance(number_classes, int), 'I need more than one class. Please set -number_classes <integer > 1>'
+    classes = tuple(range(int(number_classes)))
     print(f'I use classes {classes}')
 
     # checking for hidden files and dimension agreement
