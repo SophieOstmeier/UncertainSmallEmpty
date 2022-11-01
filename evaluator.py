@@ -487,6 +487,8 @@ def aggregate_scores(test_ref_pair,
         all_scores["image-level classification"][label]["Positive reference studies"] = tp + fn
         # negative reference cases
         all_scores["image-level classification"][label]["Negative reference studies"] = tn + fp
+        # Prevalence of positive cases
+        all_scores["image-level classification"][label]["Positive reference studies"] = (tp + fn)/(tp+tn+tp+fn)
         # calculate sensitivity
         all_scores["image-level classification"][label]["image-level Sensitivity/TPR"] = tp / (tp + fn + 1e-8)
         # calculate Precision
@@ -500,17 +502,11 @@ def aggregate_scores(test_ref_pair,
             y_true = np.array([i[label]['Volume Reference'] for i in all_scores["all"]])
             print(y_true)
             y_true = (y_true > threshold) * 1
-            # y_true[y_true > threshold] = 0
-            # y_true[y_true < threshold] = 1
             y_score = np.array([i[label]['Volume Test'] for i in all_scores["all"]])
             print(y_true)
             print(y_score)
             all_scores["image-level classification"][label]["image-level AUC"] = roc_auc_score(y_true,y_score)
             print(all_scores["image-level classification"][label]["image-level AUC"] )
-            #plot_roc_curve(y_true, y_score)
-            #plt.show()
-            #print(all_scores["image-level classification"][label]["image-level AUC"])
-            #sys.exit()
 
     # save to file if desired
     # we create a hopefully unique id by hashing the entire output dictionary
@@ -553,18 +549,13 @@ def evaluate_folder(folder_with_gts: str, folder_with_predictions: str,th: int, 
 
     time = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
 
-    files_gt_shape = subfiles(folder_with_gts,suffix=".nii.gz", join=True, sort=True)
-    files_pred_shape = subfiles(folder_with_predictions, suffix=".nii.gz", join=True, sort=True)
-    for i, a in zip(files_gt_shape,files_pred_shape):
+    files_pred = subfiles(folder_with_predictions, suffix=".nii.gz", join=False, sort=True)
+    test_ref_pair = [(join(folder_with_predictions, i), join(folder_with_gts, i)) for i in files_pred]
+    for i, a in test_ref_pair:
         shp_gt = sitk.ReadImage(i).GetSize()
         shp_pred = sitk.ReadImage(a).GetSize()
         if shp_gt != shp_pred:
             print(f'Shape mismatch: shape_gt {i}: {shp_gt} spape_pred {a}: {shp_pred}')
-    files_gt = subfiles(folder_with_gts,suffix=".nii.gz", join=False, sort=True)
-    files_pred = subfiles(folder_with_predictions, suffix=".nii.gz", join=False, sort=True)
-    assert all([i in files_pred for i in files_gt]), "files missing in folder_with_predictions"
-    assert all([i in files_gt for i in files_pred]), "files missing in folder_with_gts"
-    test_ref_pair = [(join(folder_with_predictions, i), join(folder_with_gts, i)) for i in files_pred]
     res = aggregate_scores(test_ref_pair, threshold=threshold,
                            json_output_file=join(folder_with_predictions, f"summary_{time}.json"),
                            excel_output_file=join(folder_with_predictions, f"summary_{time}.xlsx"),
