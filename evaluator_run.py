@@ -21,29 +21,6 @@ from evaluator import evaluate_folder
 from time import process_time
 
 
-def check_shape2(folder_with_predictions, folder_with_gts):
-    list_p = subfiles(folder_with_predictions, suffix='nii.gz',sort=True)
-    list_gts = subfiles(folder_with_gts, suffix='nii.gz',sort=True)
-    list_p_shp = []
-    count = 0
-    fls = 0
-    for img, lab in zip(list_p, list_gts):
-        load_p = nib.load(img)
-        load_gts = nib.load(lab)
-        shape_p = load_p.shape
-        shape_gts = load_gts.shape
-        count += 1
-        if shape_p != shape_gts:
-            print(f'{img}{lab}: {shape_p} and {shape_gts}')
-            fls += 1
-            list_p_shp.append(img)
-    if len(list_p_shp) != 0:
-        print('Number of non-matching files: ' + str(fls))
-        print('The shapes of these files do not match: ' + list_p_shp)
-        print('Please check if all ground truths have a corresponding segementation')
-    else:
-        print('All good. The shapes of all files match!')
-
 def remove_hidden(path_images):
     list_images_hidden = subfiles(path_images, prefix='.', join=True)
     for i in subfiles(path_images, suffix='.nii', join=True):
@@ -70,10 +47,8 @@ if __name__ == '__main__':
     parser.add_argument("-threshold", required=False, default=False, type=int,
                         help="If threshold necessary. By default False. If integer is used selects all cases where below"
                         "the threshold where the metric is not defined and runs detection task analysis.")
-    parser.add_argument("-hidden", required=False, default=True, action='store_true',
+    parser.add_argument("-hidden", required=False, default=True, action='store_false',
                         help="removes all hidden files in input folders")
-    parser.add_argument("-check", required=False, default=True, action='store_true',
-                        help="checks gt and prediction/segmentations for same shape")
 
     args = parser.parse_args()
 
@@ -99,9 +74,6 @@ if __name__ == '__main__':
     if args.hidden:
         remove_hidden(folder_with_gts)
         remove_hidden(folder_with_predictions)
-    if args.check:
-        check_shape2(folder_with_gts, folder_with_predictions)
-    # check_spacing2(folder_with_gts, folder_with_predictions)
 
     ################# test begin ###################
     # evaluate_folder("Test_files_gt", "Test_files_segmentation", 1, (0,1))
