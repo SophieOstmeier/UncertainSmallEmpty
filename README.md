@@ -15,9 +15,7 @@ The evaluator returns a .xlsx und .csv file with all metrics for segmentation an
 Please cite as
 
 ```
-Ostmeier, S., Axelrod, B., Bertels, J., Isensee, F., Lansberg, M.G., Christensen, S., Albers, G.W., 
-Li, L.J. and Heit, J.J., 2022. Evaluation of Medical Image Segmentation Models for Uncertain, Small 
-or Empty Reference Annotations. arXiv preprint arXiv:2209.13008.
+Ostmeier, Sophie, et al. "Evaluation of Medical Image Segmentation Models for Uncertain, Small or Empty Reference Annotations." arXiv preprint arXiv:2209.13008 (2022).
 ```
  
 The corresponding preprint is
@@ -31,7 +29,7 @@ https://doi.org/10.48550/arXiv.2209.13008
 </ul>
 <ul>
 Abstract:
-Performance metrics for medical image segmentation models are used to measure agreement between the reference annotation and the prediction. A common set  of metrics is used in the development of such models to make results more comparable. However, there is a mismatch between the distributions in public data  sets and cases encountered in clinical practice. Many common metrics fail to measure the impact of this mismatch, especially for clinical data sets containing uncertain, small or empty reference annotation. Thus, models may not be validated for clinically meaningful agreement by such metrics. Dimensions of evaluating clinical value include independence from reference annotation volume size, consideration of uncertainty of reference annotations, reward of volumetric and/or location agreement and reward of correct classification of empty reference annotations. Unlike common public data sets, our in-house data set is more representative (NCCT stroke dataset). It contains uncertain, small or empty reference annotations. We examine publicly available metrics on the predictions of a deep learning framework in order to identify for which settings common metrics provide clinical meaningful results. We compare to a public benchmark data set without uncertain, small or empty reference annotations.
+Performance metrics for medical image segmentation models are used to measure the agreement between the reference annotation and the predicted segmentation. Usually, overlap metrics, such as the Dice, are used as a metric to evaluate the performance of these models in order for results to be comparable. However, there is a mismatch between the distributions of cases and difficulty level of segmentation tasks in public data sets compared to clinical practice. Common metrics fail to measure the impact of this mismatch, especially for clinical data sets that include low signal pathologies, a difficult segmentation task, and uncertain, small, or empty reference annotations. This limitation may result in ineffective research of machine learning practitioners in designing and optimizing models. Dimensions of evaluating clinical value include consideration of the uncertainty of reference annotations, independence from reference annotation volume size, and evaluation of classification of empty reference annotations. We study how uncertain, small, and empty reference annotations influence the value of metrics for medical image segmentation on an in-house data set regardless of the model. We examine metrics behavior on the predictions of a standard deep learning framework in order to identify metrics with clinical value. We compare to a public benchmark data set (BraTS 2019) with a high-signal pathology and certain, larger, and no empty reference annotations. We may show machine learning practitioners, how uncertain, small, or empty reference annotations require a rethinking of the evaluation and optimizing procedures.
 </ul>
 
 # Installation
