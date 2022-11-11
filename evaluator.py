@@ -500,13 +500,9 @@ def aggregate_scores(test_ref_pair,
         # calculate AUC for label > 0
         if int(label) > 0:
             y_true = np.array([i[label]['Volume Reference'] for i in all_scores["all"]])
-            print(y_true)
             y_true = (y_true > threshold) * 1
             y_score = np.array([i[label]['Volume Test'] for i in all_scores["all"]])
-            print(y_true)
-            print(y_score)
             all_scores["image-level classification"][label]["image-level AUC"] = roc_auc_score(y_true,y_score)
-            print(all_scores["image-level classification"][label]["image-level AUC"] )
 
     # save to file if desired
     # we create a hopefully unique id by hashing the entire output dictionary
