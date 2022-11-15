@@ -21,7 +21,7 @@ Ostmeier, Sophie, et al. "Evaluation of Medical Image Segmentation Models for Un
 The corresponding preprint is
 
 <ul>
-"Evaluation of Medical Image Segmentation Models for Uncertain, Small or Empty Reference Annotations"
+"USE-Evaluator: Performance Metrics for Medical Image Segmentation Models with Uncertain, Small or Empty Reference Annotations"
 </ul>
 <ul>
 arXiv:2209.13008 [eess.IV]
