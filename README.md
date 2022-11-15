@@ -1,6 +1,6 @@
 # Evaluation of Medical Image Segmentation Models for UncertainSmallEmpty Reference Annotations
 
-Uncertain: inter-**expert** variability (can be quantified by comparing segmentations of two experts with this evaluator)
+Uncertain: inter-**(!)expert(!)** variability (can be quantified by comparing segmentations of two experts with this evaluator)
 
 Small: approx. 1% of the relevent body cavity or organ
 
