@@ -13,7 +13,12 @@
 #    limitations under the License.
 
 
+
+from collections import OrderedDict
+from sklearn.metrics import roc_auc_score
+from metrics import ConfusionMatrix, ALL_METRICS
 import collections
+import itertools
 import inspect
 import json
 import hashlib
@@ -22,12 +27,12 @@ from multiprocessing.pool import Pool
 import numpy as np
 import pandas as pd
 import SimpleITK as sitk
-from metrics import ConfusionMatrix, ALL_METRICS
 from batchgenerators.utilities.file_and_folder_operations import save_json, subfiles, join
 from flatten_dict import flatten
-from collections import OrderedDict
 
+import time
 
+timing_test = True
 
 class Evaluator:
     """Object that holds test and reference segmentations with label information
@@ -38,9 +43,12 @@ class Evaluator:
 
     default_metrics = [
         "Dice",
-        "Surface Dice at Tolerance 0mm",
+        # "False Discovery Rate",
+        # "False Omission Rate",
+        # "Surface Dice at Tolerance 0mm",
+        "Surface Dice at Tolerance 2mm",
         "Surface Dice at Tolerance 5mm",
-        "Surface Dice at Tolerance 10mm",
+        # "Surface Dice at Tolerance 10mm",
         "Hausdorff Distance 95",
         "Precision",
         "Recall",
@@ -50,18 +58,19 @@ class Evaluator:
         "Volume Reference",
         "Volume Test",
         "Volume Absolute Difference",
-        "Volume Relative Difference",
+        # "Volume Relative Difference",
         "Volumetric Similarity",
-]
+    ]
 
     default_advanced_metrics = [
     ]
 
     default_detection = [
-        "Detection TN",
-        "Detection TP",
-        "Detection FN",
-        "Detection FP"
+        "Image-level TN",
+        "Image-level TP",
+        "Image-level FN",
+        "Image-level FP",
+        "CCR",
     ]
 
     def __init__(self,
@@ -96,7 +105,6 @@ class Evaluator:
         else:
             for m in advanced_metrics:
                 self.advanced_metrics.append(m)
-
 
         if threshold is not None:
             self.set_threshold(threshold)
@@ -138,25 +146,26 @@ class Evaluator:
         elif isinstance(labels, (list, tuple)):
             self.labels = labels
         else:
-            raise TypeError("Can only handle dict, list, tuple, set & numpy array, but input is of type {}".format(type(labels)))
-    
+            raise TypeError(
+                "Can only handle dict, list, tuple, set & numpy array, but input is of type {}".format(type(labels)))
+
     def set_threshold(self, threshold):
         """Set the threshold.
-        :param threshold= integer in ml to switch to detection task"""
+        :param threshold= float in ml to switch to detection task"""
 
-        if isinstance(threshold, int):
+        if isinstance(threshold, float):
             self.threshold = threshold
             self.detection = True
         else:
-            raise TypeError("Can integer but input is of type {}".format(type(threshold)))
-    
+            raise TypeError("Can float but input is of type {}".format(type(threshold)))
+
     def construct_labels(self):
         """Construct label set from unique entries in segmentations."""
 
         if self.test is None and self.reference is None:
             raise ValueError("No test or reference segmentations.")
         else:
-        ######################
+            ######################
             labels = np.union1d(np.unique(self.test),
                                 np.unique(self.reference))
         self.labels = list(map(lambda x: int(x), labels))
@@ -170,14 +179,15 @@ class Evaluator:
         elif isinstance(metrics, (list, tuple, np.ndarray)):
             self.metrics = metrics
         else:
-            raise TypeError("Can only handle list, tuple, set & numpy array, but input is of type {}".format(type(metrics)))
+            raise TypeError(
+                "Can only handle list, tuple, set & numpy array, but input is of type {}".format(type(metrics)))
 
     def add_metric(self, metric):
 
         if metric not in self.metrics:
             self.metrics.append(metric)
 
-    def evaluate(self, test=None, reference=None,threshold=None, advanced=False, **metric_kwargs):
+    def evaluate(self, test=None, reference=None, threshold=None, voxel_spacing=None, advanced=False, **metric_kwargs):
         """Compute metrics for segmentations."""
         if test is not None:
             self.set_test(test)
@@ -198,7 +208,7 @@ class Evaluator:
         # get functions for evaluation
         # somewhat convoluted, but allows users to define additional metrics
         # on the fly, e.g. inside an IPython console
-        _funcs = {m: ALL_METRICS[m] for m in self.metrics + self.advanced_metrics+ self.default_detection}
+        _funcs = {m: ALL_METRICS[m] for m in self.metrics + self.advanced_metrics + self.default_detection}
         frames = inspect.getouterframes(inspect.currentframe())
         for metric in self.metrics:
             for f in frames:
@@ -218,7 +228,7 @@ class Evaluator:
         eval_metrics = self.metrics
         if advanced:
             eval_metrics += self.advanced_metrics
-        if isinstance(self.threshold, int):
+        if isinstance(self.threshold, float):
             eval_metrics += self.default_detection
 
         if isinstance(self.labels, dict):
@@ -237,10 +247,12 @@ class Evaluator:
                         current_reference += (self.reference == l)
                     self.confusion_matrix.set_test(current_test)
                     self.confusion_matrix.set_reference(current_reference)
+                    self.confusion_matrix.set_threshold(self.threshold)
+                    self.confusion_matrix.set_voxel_spacing(voxel_spacing)
                 for metric in eval_metrics:
                     self.result[k][metric] = _funcs[metric](confusion_matrix=self.confusion_matrix,
-                                                               nan_for_nonexisting=self.nan_for_nonexisting,
-                                                               **metric_kwargs)
+                                                            nan_for_nonexisting=self.nan_for_nonexisting,
+                                                            **metric_kwargs)
 
         else:
 
@@ -249,10 +261,11 @@ class Evaluator:
                 self.result[k] = OrderedDict()
                 self.confusion_matrix.set_test(self.test == l)
                 self.confusion_matrix.set_reference(self.reference == l)
+                self.confusion_matrix.set_threshold(self.threshold)
+                self.confusion_matrix.set_voxel_spacing(voxel_spacing)
                 for metric in eval_metrics:
                     self.result[k][metric] = _funcs[metric](confusion_matrix=self.confusion_matrix,
                                                             nan_for_nonexisting=self.nan_for_nonexisting,
-                                                            threshold=self.threshold,
                                                             **metric_kwargs)
 
         return self.result
@@ -335,6 +348,7 @@ class NiftiEvaluator(Evaluator):
 
         return super(NiftiEvaluator, self).evaluate(test, reference, **metric_kwargs)
 
+
 def run_evaluation(args):
     test, ref, evaluator, metric_kwargs = args
     # evaluate
@@ -349,12 +363,15 @@ def run_evaluation(args):
         current_scores["reference"] = ref
     return current_scores
 
+
 def format_dict_for_excel(dict_scores):
     list_cases = []
-    for case in dict_scores: # cases
+    for case in dict_scores:  # cases
         flatten_dict = flatten(case)
         list_cases.append(flatten_dict)
     return list_cases
+
+
 
 def aggregate_scores(test_ref_pair,
                      threshold=None,
@@ -371,7 +388,7 @@ def aggregate_scores(test_ref_pair,
                      **metric_kwargs):
     """
     test = predicted image
-    :param threshold: in ml for detection task
+    :param threshold: in ml for Image-level task
     :param test_ref_triple:
     :param evaluator:
     :param labels: must be a dict of int-> str or a list of int
@@ -390,7 +407,7 @@ def aggregate_scores(test_ref_pair,
 
     if labels is not None:
         evaluator.set_labels(labels)
-    
+
     if threshold is not None:
         evaluator.set_threshold(threshold)
 
@@ -400,16 +417,25 @@ def aggregate_scores(test_ref_pair,
     all_scores["all"] = []
     all_scores["mean"] = OrderedDict()
     all_scores["median"] = OrderedDict()
-    all_scores["detection"] = OrderedDict()
+    all_scores["image-level classification"] = OrderedDict()
 
     test = [i[0] for i in test_ref_pair]
     ref = [i[1] for i in test_ref_pair]
+
+    run_eval_start_time = time.perf_counter()
     p = Pool(num_threads)
-    all_res = p.map(run_evaluation, zip(test, ref, [evaluator]*len(ref), [metric_kwargs]*len(ref)))
+    all_res = p.map(run_evaluation, zip(test, ref, [evaluator] * len(ref), [metric_kwargs] * len(ref)))
     p.close()
     p.join()
+    print("run eval took ", time.perf_counter() - run_eval_start_time, "for", len(test))
+
+    remainder_start = time.perf_counter()
+
+    # brian code 1
+#    all_scores["all"] = list(itertools.chain.from_iterable(all_res))
 
     for i in range(len(all_res)):
+        # removed 1
         all_scores["all"].append(all_res[i])
 
         # append score list for median
@@ -438,13 +464,13 @@ def aggregate_scores(test_ref_pair,
         for label, score_dict in all_res[i].items():
             if label in ("test", "reference"):
                 continue
-            if label not in all_scores["detection"]:
-                all_scores["detection"][label] = OrderedDict()
+            if label not in all_scores["image-level classification"]:
+                all_scores["image-level classification"][label] = OrderedDict()
             for score, value in score_dict.items():
                 if score in detection_scores:
-                    if score not in all_scores["detection"][label]:
-                        all_scores["detection"][label][score] = []
-                    all_scores["detection"][label][score].append(value)
+                    if score not in all_scores["image-level classification"][label]:
+                        all_scores["image-level classification"][label][score] = []
+                    all_scores["image-level classification"][label][score].append(value)
 
     for label in all_scores["mean"]:
         for score in all_scores["mean"][label]:
@@ -460,29 +486,47 @@ def aggregate_scores(test_ref_pair,
             else:
                 all_scores["median"][label][score] = float(np.median(all_scores["median"][label][score]))
 
-    for label in all_scores["detection"]:
-        for score in all_scores["detection"][label]:
+    for label in all_scores["image-level classification"]:
+        for score in all_scores["image-level classification"][label]:
             if nanmean:
-                all_scores["detection"][label][score] = float(np.nansum(all_scores["detection"][label][score]))
+                if score == 'LDR' or score == 'CCR':
+                    all_scores["image-level classification"][label][score] = float(
+                        np.nanmean(all_scores["image-level classification"][label][score]))
+                else:
+                    all_scores["image-level classification"][label][score] = float(
+                        np.nansum(all_scores["image-level classification"][label][score]))
             else:
-                all_scores["detection"][label][score] = float(np.sum(all_scores["detection"][label][score]))
-
+                if score == 'LDR' or score == 'CCR':
+                    all_scores["image-level classification"][label][score] = float(
+                        np.mean(all_scores["image-level classification"][label][score]))
+                else:
+                    all_scores["image-level classification"][label][score] = float(
+                        np.sum(all_scores["image-level classification"][label][score]))
     # calculate image classification metric
-    for label in all_scores["detection"]:
-        tp = float(all_scores["detection"][label]["Detection TP"])
-        tn = float(all_scores["detection"][label]["Detection TN"])
-        fp = float(all_scores["detection"][label]["Detection FP"])
-        fn = float(all_scores["detection"][label]["Detection FN"])
-        # positive reference cases
-        all_scores["detection"][label]["Positive reference cases"] = tp+fn
-        # negative reference cases
-        all_scores["detection"][label]["Negative reference cases"] = tn+fp
-        # calculate sensitivity
-        all_scores["detection"][label]["Detection Sensitivity/Recall"] = tp/(tp+fn+1e-8)
-        # calculate kappa
-        all_scores["detection"][label]["Detection Precision"] = tp/(tp+fp+1e-8)
-        # calculate specificity
-        all_scores["detection"][label]["Detection Specificity"] = tn/(tn+fp+1e-8)
+    if isinstance(threshold, float):
+        for label in all_scores["image-level classification"]:
+            tp = float(all_scores["image-level classification"][label]["Image-level TP"])
+            tn = float(all_scores["image-level classification"][label]["Image-level TN"])
+            fp = float(all_scores["image-level classification"][label]["Image-level FP"])
+            fn = float(all_scores["image-level classification"][label]["Image-level FN"])
+            # positive reference cases
+            all_scores["image-level classification"][label]["Positive reference studies"] = tp + fn
+            # negative reference cases
+            all_scores["image-level classification"][label]["Negative reference studies"] = tn + fp
+            # calculate sensitivity
+            all_scores["image-level classification"][label]["image-level Sensitivity/TPR"] = tp / (tp + fn + 1e-8)
+            # calculate Precision
+            all_scores["image-level classification"][label]["image-level Precision"] = tp / (tp + fp + 1e-8)
+            # calculate specificity
+            all_scores["image-level classification"][label]["image-level Specificity"] = tn / (tn + fp + 1e-8)
+            # calculate specificity
+            all_scores["image-level classification"][label]["image-level FPR"] = tp / (tp + fn + 1e-8)
+            # calculate AUC for label > 0
+            if int(label) > 0:
+                y_true = np.array([i[label]['Volume Reference'] for i in all_scores["all"]])
+                y_true = (y_true > threshold) * 1
+                y_score = np.array([i[label]['Volume Test'] for i in all_scores["all"]])
+                all_scores["image-level classification"][label]["image-level AUC"] = roc_auc_score(y_true, y_score)
 
     # save to file if desired
     # we create a hopefully unique id by hashing the entire output dictionary
@@ -500,17 +544,23 @@ def aggregate_scores(test_ref_pair,
         df1 = pd.DataFrame(format_dict_for_excel(all_scores["all"]))
         df2 = pd.DataFrame(all_scores["mean"])
         df3 = pd.DataFrame(all_scores["median"])
-        df4 = pd.DataFrame(all_scores["detection"])
-        with pd.ExcelWriter(excel_output_file) as writer:
-            df1.to_excel(writer, sheet_name = 'all' )
-            df2.to_excel(writer, sheet_name = 'mean')
-            df3.to_excel(writer, sheet_name = 'median')
-            df4.to_excel(writer, sheet_name = 'detection')
+        df4 = pd.DataFrame(all_scores["image-level classification"])
+        try:
+            with pd.ExcelWriter(excel_output_file) as writer:
+                df1.to_excel(writer, sheet_name='all')
+                df2.to_excel(writer, sheet_name='mean')
+                df3.to_excel(writer, sheet_name='median')
+                df4.to_excel(writer, sheet_name='image-level classification')
+        except:
+            print('no excel file name defined')
         print(f'results can be found here: {excel_output_file}')
+
+    print("remainder took", time.perf_counter() - remainder_start_time)
     return all_scores
 
 
-def evaluate_folder(folder_with_gdts: str, folder_with_predictions: str,th: int, labels: tuple, **metric_kwargs):
+def evaluate_folder(folder_with_gts: str, folder_with_predictions: str, th: float, labels: tuple, specific: bool,
+                    **metric_kwargs):
     """
     writes a summary.json to folder_with_predictions
     :param folder_with_gts: folder where the ground truth segmentations are saved. Must be nifti files.
@@ -518,28 +568,72 @@ def evaluate_folder(folder_with_gdts: str, folder_with_predictions: str,th: int,
     :param labels: tuple of int with the labels in the dataset. For example (0, 1, 2, 3) for Task001_BrainTumour.
     :return:
     """
-    if isinstance(th, int):
+    if isinstance(th, float):
         threshold = th
     else:
         threshold = None
 
-    time = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+    time_start = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+    print('start time:', time_start)
+    print('specific:', specific)
 
-    files_gt_shape = subfiles(folder_with_gts,suffix=".nii.gz", join=True, sort=True)
-    files_pred_shape = subfiles(folder_with_predictions, suffix=".nii.gz", join=True, sort=True)
-    for i, a in zip(files_gt_shape,files_pred_shape):
-        shp_gt = sitk.ReadImage(i).GetSize()
-        shp_pred = sitk.ReadImage(a).GetSize()
-        if shp_gt != shp_pred:
-            print(f'Shape mismatch: shape_gt {i}: {shp_gt} spape_pred {a}: {shp_pred}')
-    files_gt = subfiles(folder_with_gts,suffix=".nii.gz", join=False, sort=True)
-    files_pred = subfiles(folder_with_predictions, suffix=".nii.gz", join=False, sort=True)
+    if specific:
+
+        list = ['NCCT_002.nii.gz', 'NCCT_003.nii.gz', 'NCCT_004.nii.gz', 'NCCT_005.nii.gz', 'NCCT_006.nii.gz',
+                'NCCT_007.nii.gz', 'NCCT_009.nii.gz', 'NCCT_010.nii.gz', 'NCCT_011.nii.gz', 'NCCT_012.nii.gz',
+                'NCCT_015.nii.gz', 'NCCT_019.nii.gz', 'NCCT_021.nii.gz', 'NCCT_022.nii.gz', 'NCCT_023.nii.gz',
+                'NCCT_027.nii.gz', 'NCCT_028.nii.gz', 'NCCT_030.nii.gz', 'NCCT_031.nii.gz', 'NCCT_032.nii.gz',
+                'NCCT_033.nii.gz', 'NCCT_034.nii.gz', 'NCCT_035.nii.gz', 'NCCT_038.nii.gz', 'NCCT_039.nii.gz',
+                'NCCT_040.nii.gz', 'NCCT_041.nii.gz', 'NCCT_042.nii.gz', 'NCCT_043.nii.gz', 'NCCT_044.nii.gz',
+                'NCCT_045.nii.gz', 'NCCT_046.nii.gz', 'NCCT_048.nii.gz', 'NCCT_049.nii.gz', 'NCCT_050.nii.gz',
+                'NCCT_051.nii.gz', 'NCCT_052.nii.gz', 'NCCT_054.nii.gz', 'NCCT_055.nii.gz', 'NCCT_057.nii.gz',
+                'NCCT_058.nii.gz', 'NCCT_059.nii.gz', 'NCCT_060.nii.gz', 'NCCT_061.nii.gz', 'NCCT_062.nii.gz',
+                'NCCT_065.nii.gz', 'NCCT_070.nii.gz', 'NCCT_076.nii.gz', 'NCCT_077.nii.gz', 'NCCT_078.nii.gz',
+                'NCCT_079.nii.gz', 'NCCT_082.nii.gz', 'NCCT_083.nii.gz', 'NCCT_084.nii.gz', 'NCCT_086.nii.gz',
+                'NCCT_087.nii.gz', 'NCCT_088.nii.gz', 'NCCT_089.nii.gz', 'NCCT_090.nii.gz', 'NCCT_091.nii.gz',
+                'NCCT_092.nii.gz', 'NCCT_095.nii.gz', 'NCCT_100.nii.gz', 'NCCT_102.nii.gz', 'NCCT_104.nii.gz',
+                'NCCT_105.nii.gz', 'NCCT_106.nii.gz', 'NCCT_107.nii.gz', 'NCCT_108.nii.gz', 'NCCT_110.nii.gz',
+                'NCCT_112.nii.gz', 'NCCT_113.nii.gz', 'NCCT_116.nii.gz', 'NCCT_117.nii.gz', 'NCCT_118.nii.gz',
+                'NCCT_119.nii.gz', 'NCCT_121.nii.gz', 'NCCT_122.nii.gz', 'NCCT_123.nii.gz', 'NCCT_124.nii.gz',
+                'NCCT_125.nii.gz', 'NCCT_126.nii.gz', 'NCCT_127.nii.gz', 'NCCT_129.nii.gz', 'NCCT_130.nii.gz',
+                'NCCT_132.nii.gz', 'NCCT_134.nii.gz', 'NCCT_136.nii.gz', 'NCCT_138.nii.gz', 'NCCT_140.nii.gz',
+                'NCCT_141.nii.gz', 'NCCT_143.nii.gz', 'NCCT_144.nii.gz', 'NCCT_145.nii.gz', 'NCCT_146.nii.gz',
+                'NCCT_147.nii.gz', 'NCCT_148.nii.gz', 'NCCT_149.nii.gz', 'NCCT_150.nii.gz', 'NCCT_151.nii.gz',
+                'NCCT_152.nii.gz', 'NCCT_153.nii.gz', 'NCCT_154.nii.gz', 'NCCT_155.nii.gz', 'NCCT_156.nii.gz',
+                'NCCT_157.nii.gz', 'NCCT_160.nii.gz', 'NCCT_162.nii.gz', 'NCCT_163.nii.gz', 'NCCT_165.nii.gz',
+                'NCCT_167.nii.gz', 'NCCT_169.nii.gz', 'NCCT_172.nii.gz', 'NCCT_174.nii.gz', 'NCCT_175.nii.gz',
+                'NCCT_178.nii.gz', 'NCCT_179.nii.gz', 'NCCT_180.nii.gz', 'NCCT_185.nii.gz', 'NCCT_186.nii.gz',
+                'NCCT_189.nii.gz', 'NCCT_190.nii.gz', 'NCCT_192.nii.gz', 'NCCT_195.nii.gz', 'NCCT_196.nii.gz',
+                'NCCT_198.nii.gz', 'NCCT_199.nii.gz', 'NCCT_201.nii.gz', 'NCCT_207.nii.gz', 'NCCT_208.nii.gz',
+                'NCCT_209.nii.gz', 'NCCT_210.nii.gz', 'NCCT_211.nii.gz', 'NCCT_213.nii.gz', 'NCCT_214.nii.gz',
+                'NCCT_215.nii.gz', 'NCCT_216.nii.gz', 'NCCT_217.nii.gz', 'NCCT_219.nii.gz', 'NCCT_220.nii.gz',
+                'NCCT_222.nii.gz', 'NCCT_226.nii.gz', 'NCCT_228.nii.gz', 'NCCT_229.nii.gz', 'NCCT_231.nii.gz',
+                'NCCT_232.nii.gz', 'NCCT_235.nii.gz', 'NCCT_236.nii.gz', 'NCCT_240.nii.gz', 'NCCT_241.nii.gz',
+                'NCCT_243.nii.gz', 'NCCT_244.nii.gz', 'NCCT_245.nii.gz', 'NCCT_248.nii.gz', 'NCCT_250.nii.gz',
+                'NCCT_253.nii.gz', 'NCCT_255.nii.gz', 'NCCT_257.nii.gz', 'NCCT_258.nii.gz', 'NCCT_261.nii.gz']
+
+        if timing_test:
+            list = list[:8]
+
+        files_gt_all = subfiles(folder_with_gts, suffix=".nii.gz", join=False, sort=True)
+        files_gt = [g for g in files_gt_all if g in list]
+
+        files_pred_all = subfiles(folder_with_predictions, suffix=".nii.gz", join=False, sort=True)
+        files_pred = [p for p in files_pred_all if p in list]
+
+        print('I evaluate for cases:', list)
+    else:
+        files_gt = subfiles(folder_with_gts, suffix=".nii.gz", join=False, sort=True)
+        files_pred = subfiles(folder_with_predictions, suffix=".nii.gz", join=False, sort=True)
+
     assert all([i in files_pred for i in files_gt]), "files missing in folder_with_predictions"
     assert all([i in files_gt for i in files_pred]), "files missing in folder_with_gts"
     test_ref_pair = [(join(folder_with_predictions, i), join(folder_with_gts, i)) for i in files_pred]
-    res = aggregate_scores(test_ref_pair, threshold=threshold,
-                           json_output_file=join(folder_with_predictions, f"summary_{time}.json"),
-                           excel_output_file=join(folder_with_predictions, f"summary_{time}.xlsx"),
-                           num_threads=8, labels=labels, **metric_kwargs)
-    return res
 
+    agg_s_time = time.perf_counter()
+    res = aggregate_scores(test_ref_pair, threshold=threshold,
+                           json_output_file=join(folder_with_predictions, f"summary_{time_start}.json"),
+                           excel_output_file=join(folder_with_predictions, f"summary_{time_start}.xlsx"),
+                           num_threads=8, labels=labels, **metric_kwargs)
+    print("agg scores took: ", time.perf_counter() - agg_s_time)
+    return res
