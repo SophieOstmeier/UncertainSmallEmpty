@@ -572,7 +572,54 @@ def compute_surface_dice_at_tolerance_10(test=None, reference=None, confusion_ma
 
     return surface_dice_10
 
+def compute_surface_dice_at_tolerance_list(test=None, reference=None, confusion_matrix=None, voxel_spacing=None,
+                                        threshold=None, nan_for_nonexisting=True, tolerance_list = None, **kwargs):
+    """Computes the _surface_ DICE coefficient at a specified tolerance.
 
+    Computes the _surface_ DICE coefficient at a specified tolerance. Not to be
+    confused with the standard _volumetric_ DICE coefficient. The surface DICE
+    measures the overlap of two surfaces instead of two volumes. A surface
+    element is counted as overlapping (or touching), when the closest distance to
+    the other surface is less or equal to the specified tolerance. The DICE
+    coefficient is in the range between 0.0 (no overlap) to 1.0 (perfect overlap).
+
+    Args:
+    surface_distances: dict with "distances_gt_to_pred", "distances_pred_to_gt"
+      "surfel_areas_gt", "surfel_areas_pred" created by
+      compute_surface_distances()
+    tolerance_mm: a float value. The tolerance in mm
+
+    Returns:
+    A float value. The surface DICE coefficient in [0.0, 1.0].
+    """
+    if confusion_matrix is None:
+        confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
+
+    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
+    test_small, reference_small = confusion_matrix.get_thresholded()
+
+    if reference_small or test_small or test_full or reference_full:
+        if nan_for_nonexisting:
+            return [float("NaN") for x in tolerance_list]
+        else:
+            return [0 for x in tolerance_list]
+
+    test, reference = confusion_matrix.test, confusion_matrix.reference
+    surface_distances = compute_surface_distances(test, reference, confusion_matrix.voxel_spacing)
+    distances_gt_to_pred = surface_distances["distances_gt_to_pred"]
+    distances_pred_to_gt = surface_distances["distances_pred_to_gt"]
+    surfel_areas_gt = surface_distances["surfel_areas_gt"]
+    surfel_areas_pred = surface_distances["surfel_areas_pred"]
+
+    # for 10mm
+
+    surfel_areas_pred_sum = np.sum(surfel_areas_pred)
+    surfel_areas_gt_sum = np.sum(surfel_areas_gt)
+
+    return list(map(
+        lambda tolerance : (
+                np.sum(surfel_areas_gt[distances_gt_to_pred <= tolerance]) +
+                np.sum(surfel_areas_pred[distances_pred_to_gt <= tolerance])) / (surfel_areas_gt_sum + surfel_areas_pred_sum), tolerance_list))
 def compute_surface_dice_at_tolerance_2(test=None, reference=None, confusion_matrix=None, voxel_spacing=None,
                                         threshold=None, nan_for_nonexisting=True, **kwargs):
     """Computes the _surface_ DICE coefficient at a specified tolerance.
@@ -872,6 +919,7 @@ ALL_METRICS = {
     "False Positive Rate": false_positive_rate,
     "Dice original": dice_orig,
     "Dice": dice_th,
+    "Surface Dice Variable": compute_surface_dice_at_tolerance_list,
     "Surface Dice at Tolerance 0mm": compute_surface_dice_at_tolerance_0,
     "Surface Dice at Tolerance 2mm": compute_surface_dice_at_tolerance_2,
     "Surface Dice at Tolerance 5mm": compute_surface_dice_at_tolerance_5,
