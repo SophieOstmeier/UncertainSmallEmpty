@@ -43,12 +43,8 @@ class Evaluator:
 
     default_metrics = [
         "Dice",
-        # "False Discovery Rate",
-        # "False Omission Rate",
-        # "Surface Dice at Tolerance 0mm",
         "Surface Dice at Tolerance 2mm",
         "Surface Dice at Tolerance 5mm",
-        # "Surface Dice at Tolerance 10mm",
         "Hausdorff Distance 95",
         "Precision",
         "Recall",
@@ -58,7 +54,6 @@ class Evaluator:
         "Volume Reference",
         "Volume Test",
         "Volume Absolute Difference",
-        # "Volume Relative Difference",
         "Volumetric Similarity",
     ]
 
