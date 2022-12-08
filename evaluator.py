@@ -579,38 +579,7 @@ def evaluate_folder(folder_with_gts: str, folder_with_predictions: str, th: floa
 
     if specific:
 
-        list = ['NCCT_002.nii.gz', 'NCCT_003.nii.gz', 'NCCT_004.nii.gz', 'NCCT_005.nii.gz', 'NCCT_006.nii.gz',
-                'NCCT_007.nii.gz', 'NCCT_009.nii.gz', 'NCCT_010.nii.gz', 'NCCT_011.nii.gz', 'NCCT_012.nii.gz',
-                'NCCT_015.nii.gz', 'NCCT_019.nii.gz', 'NCCT_021.nii.gz', 'NCCT_022.nii.gz', 'NCCT_023.nii.gz',
-                'NCCT_027.nii.gz', 'NCCT_028.nii.gz', 'NCCT_030.nii.gz', 'NCCT_031.nii.gz', 'NCCT_032.nii.gz',
-                'NCCT_033.nii.gz', 'NCCT_034.nii.gz', 'NCCT_035.nii.gz', 'NCCT_038.nii.gz', 'NCCT_039.nii.gz',
-                'NCCT_040.nii.gz', 'NCCT_041.nii.gz', 'NCCT_042.nii.gz', 'NCCT_043.nii.gz', 'NCCT_044.nii.gz',
-                'NCCT_045.nii.gz', 'NCCT_046.nii.gz', 'NCCT_048.nii.gz', 'NCCT_049.nii.gz', 'NCCT_050.nii.gz',
-                'NCCT_051.nii.gz', 'NCCT_052.nii.gz', 'NCCT_054.nii.gz', 'NCCT_055.nii.gz', 'NCCT_057.nii.gz',
-                'NCCT_058.nii.gz', 'NCCT_059.nii.gz', 'NCCT_060.nii.gz', 'NCCT_061.nii.gz', 'NCCT_062.nii.gz',
-                'NCCT_065.nii.gz', 'NCCT_070.nii.gz', 'NCCT_076.nii.gz', 'NCCT_077.nii.gz', 'NCCT_078.nii.gz',
-                'NCCT_079.nii.gz', 'NCCT_082.nii.gz', 'NCCT_083.nii.gz', 'NCCT_084.nii.gz', 'NCCT_086.nii.gz',
-                'NCCT_087.nii.gz', 'NCCT_088.nii.gz', 'NCCT_089.nii.gz', 'NCCT_090.nii.gz', 'NCCT_091.nii.gz',
-                'NCCT_092.nii.gz', 'NCCT_095.nii.gz', 'NCCT_100.nii.gz', 'NCCT_102.nii.gz', 'NCCT_104.nii.gz',
-                'NCCT_105.nii.gz', 'NCCT_106.nii.gz', 'NCCT_107.nii.gz', 'NCCT_108.nii.gz', 'NCCT_110.nii.gz',
-                'NCCT_112.nii.gz', 'NCCT_113.nii.gz', 'NCCT_116.nii.gz', 'NCCT_117.nii.gz', 'NCCT_118.nii.gz',
-                'NCCT_119.nii.gz', 'NCCT_121.nii.gz', 'NCCT_122.nii.gz', 'NCCT_123.nii.gz', 'NCCT_124.nii.gz',
-                'NCCT_125.nii.gz', 'NCCT_126.nii.gz', 'NCCT_127.nii.gz', 'NCCT_129.nii.gz', 'NCCT_130.nii.gz',
-                'NCCT_132.nii.gz', 'NCCT_134.nii.gz', 'NCCT_136.nii.gz', 'NCCT_138.nii.gz', 'NCCT_140.nii.gz',
-                'NCCT_141.nii.gz', 'NCCT_143.nii.gz', 'NCCT_144.nii.gz', 'NCCT_145.nii.gz', 'NCCT_146.nii.gz',
-                'NCCT_147.nii.gz', 'NCCT_148.nii.gz', 'NCCT_149.nii.gz', 'NCCT_150.nii.gz', 'NCCT_151.nii.gz',
-                'NCCT_152.nii.gz', 'NCCT_153.nii.gz', 'NCCT_154.nii.gz', 'NCCT_155.nii.gz', 'NCCT_156.nii.gz',
-                'NCCT_157.nii.gz', 'NCCT_160.nii.gz', 'NCCT_162.nii.gz', 'NCCT_163.nii.gz', 'NCCT_165.nii.gz',
-                'NCCT_167.nii.gz', 'NCCT_169.nii.gz', 'NCCT_172.nii.gz', 'NCCT_174.nii.gz', 'NCCT_175.nii.gz',
-                'NCCT_178.nii.gz', 'NCCT_179.nii.gz', 'NCCT_180.nii.gz', 'NCCT_185.nii.gz', 'NCCT_186.nii.gz',
-                'NCCT_189.nii.gz', 'NCCT_190.nii.gz', 'NCCT_192.nii.gz', 'NCCT_195.nii.gz', 'NCCT_196.nii.gz',
-                'NCCT_198.nii.gz', 'NCCT_199.nii.gz', 'NCCT_201.nii.gz', 'NCCT_207.nii.gz', 'NCCT_208.nii.gz',
-                'NCCT_209.nii.gz', 'NCCT_210.nii.gz', 'NCCT_211.nii.gz', 'NCCT_213.nii.gz', 'NCCT_214.nii.gz',
-                'NCCT_215.nii.gz', 'NCCT_216.nii.gz', 'NCCT_217.nii.gz', 'NCCT_219.nii.gz', 'NCCT_220.nii.gz',
-                'NCCT_222.nii.gz', 'NCCT_226.nii.gz', 'NCCT_228.nii.gz', 'NCCT_229.nii.gz', 'NCCT_231.nii.gz',
-                'NCCT_232.nii.gz', 'NCCT_235.nii.gz', 'NCCT_236.nii.gz', 'NCCT_240.nii.gz', 'NCCT_241.nii.gz',
-                'NCCT_243.nii.gz', 'NCCT_244.nii.gz', 'NCCT_245.nii.gz', 'NCCT_248.nii.gz', 'NCCT_250.nii.gz',
-                'NCCT_253.nii.gz', 'NCCT_255.nii.gz', 'NCCT_257.nii.gz', 'NCCT_258.nii.gz', 'NCCT_261.nii.gz']
+        list = []
 
         if timing_test:
             list = list[:8]
