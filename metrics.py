@@ -169,7 +169,7 @@ def dice_th(test=None, reference=None, confusion_matrix=None, voxel_spacing=None
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small and test_small:
+    if reference_small:
         if nan_for_nonexisting:
             return float("NaN")
         else:
@@ -187,11 +187,12 @@ def precision(test=None, reference=None, confusion_matrix=None, voxel_spacing=No
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if test_small:
+    if reference_small:
         if nan_for_nonexisting:
             return float("NaN")
         else:
             return 0.
+
     return float(tp / (tp + fp))
 
 
@@ -557,7 +558,7 @@ def volumetric_similarity(test=None, reference=None, confusion_matrix=None, voxe
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small and test_small:
+    if reference_small:
         if nan_for_nonexisting:
             return float("NaN")
         else:

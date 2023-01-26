@@ -47,6 +47,8 @@ if __name__ == '__main__':
                         help="removes all hidden files in input folders")
     parser.add_argument("-specific", required=False, default=False, action='store_true',
                         help="evaluates subset based on list provided")
+    parser.add_argument("-name", required=False, default=None, type=str,
+                        help="Desired name of result files, default name is time of evaluation start")
 
     args = parser.parse_args()
 
@@ -54,8 +56,11 @@ if __name__ == '__main__':
     folder_with_gts = args.folder_with_gts
     folder_with_predictions = args.folder_with_predictions
 
-    # specific
+    # specific casses to be evaluated
     specific = args.specific
+
+    # name of result files
+    name = args.name
 
     # threshold
     threshold = args.threshold
@@ -77,13 +82,9 @@ if __name__ == '__main__':
         remove_hidden(folder_with_gts)
         remove_hidden(folder_with_predictions)
 
-    ################# test begin ###################
-    # evaluate_folder("Test_files_gt", "Test_files_segmentation", 1, (0,1))
-    ################# test end ###################
-
     # run
     time_start = process_time()
-    evaluate_folder(folder_with_gts, folder_with_predictions, th, classes, specific)
+    evaluate_folder(folder_with_gts, folder_with_predictions, th, classes, specific, name=name)
     time_end = process_time()
     print(f'Time needed: {round(time_end-time_start,4)} min')
     print('Done')
