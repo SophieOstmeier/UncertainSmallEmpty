@@ -16,7 +16,6 @@ import numpy as np
 from medpy import metric
 from surface_distance import compute_surface_distances
 from scipy.spatial import distance
-import sys
 import math
 
 def assert_shape(test, reference):
@@ -169,13 +168,13 @@ def dice_th(test=None, reference=None, confusion_matrix=None, voxel_spacing=None
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small:
+    if reference_small or (reference_small and test_small):
         if nan_for_nonexisting:
             return float("NaN")
         else:
             return 0.
 
-    return float(2. * tp / (2 * tp + fp + fn))
+    return float(2. * tp / (2 * tp + fp + fn + 1e-8))
 
 
 def precision(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
@@ -187,13 +186,13 @@ def precision(test=None, reference=None, confusion_matrix=None, voxel_spacing=No
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small:
+    if reference_small or (reference_small and test_small):
         if nan_for_nonexisting:
             return float("NaN")
         else:
             return 0.
 
-    return float(tp / (tp + fp))
+    return float(tp / (tp + fp + 1e-8))
 
 
 def sensitivity(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
@@ -207,7 +206,7 @@ def sensitivity(test=None, reference=None, confusion_matrix=None, voxel_spacing=
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small:
+    if reference_small or (reference_small and test_small):
         if nan_for_nonexisting:
             return float("NaN")
         else:
@@ -381,7 +380,7 @@ def hausdorff_distance_95(test=None, reference=None, confusion_matrix=None, voxe
     test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small or test_small or test_full or reference_full:
+    if reference_small or test_empty or (reference_small and test_small):
         if nan_for_nonexisting:
             return float("NaN")
         else:
@@ -396,10 +395,10 @@ def avg_surface_distance(test=None, reference=None, confusion_matrix=None, voxel
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
-    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
     test_small, reference_small = confusion_matrix.get_thresholded()
+    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
 
-    if reference_small or test_small or test_full or reference_full:
+    if reference_small or test_empty or (reference_small and test_small):
         if nan_for_nonexisting:
             return float("NaN")
         else:
@@ -415,10 +414,10 @@ def avg_surface_distance_symmetric(test=None, reference=None, confusion_matrix=N
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
-    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
     test_small, reference_small = confusion_matrix.get_thresholded()
+    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
 
-    if reference_small or test_small or test_full or reference_full:
+    if reference_small or test_empty or (reference_small and test_small):
         if nan_for_nonexisting:
             return float("NaN")
         else:
@@ -451,10 +450,11 @@ def compute_surface_dice_at_tolerance_list(test=None, reference=None, confusion_
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
-    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
     test_small, reference_small = confusion_matrix.get_thresholded()
+    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
 
-    if reference_small or test_small or test_full or reference_full:
+
+    if reference_small or test_empty or (reference_small and test_small):
         if nan_for_nonexisting:
             return [float("NaN") for x in tolerance_list]
         else:
@@ -523,13 +523,32 @@ def abs_volume_difference(test=None, reference=None, confusion_matrix=None, voxe
 
     voxel_volume = math.prod(confusion_matrix.voxel_spacing)
 
-    if reference_small:
+    if reference_small and test_small:
         if nan_for_nonexisting:
             return float("NaN")
         else:
             return 0.
 
     return float(abs((tp + fn) - (tp + fp)) * voxel_volume * 0.001)
+
+def volume_difference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
+                          nan_for_nonexisting=True, **kwargs):
+
+    if confusion_matrix is None:
+        confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
+
+    tp, fp, tn, fn = confusion_matrix.get_matrix()
+    test_small, reference_small = confusion_matrix.get_thresholded()
+
+    voxel_volume = math.prod(confusion_matrix.voxel_spacing)
+
+    if reference_small and test_small:
+        if nan_for_nonexisting:
+            return float("NaN")
+        else:
+            return 0.
+
+    return float((tp + fn) - (tp + fp) * voxel_volume * 0.001)
 
 
 def rel_volume_difference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
@@ -558,7 +577,7 @@ def volumetric_similarity(test=None, reference=None, confusion_matrix=None, voxe
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small:
+    if reference_small or (reference_small and test_small):
         if nan_for_nonexisting:
             return float("NaN")
         else:
@@ -748,6 +767,7 @@ ALL_METRICS = {
     "Total Negatives Reference": total_negatives_reference,
     "Volume Reference": volume_reference,
     "Volume Test": volume_test,
+    "Volume Difference": volume_difference,
     "Volume Absolute Difference": abs_volume_difference,
     "Volume Relative Difference": rel_volume_difference,
     "Volumetric Similarity": volumetric_similarity,
