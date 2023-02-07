@@ -11,9 +11,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-
-
-
+import sys
 from collections import OrderedDict
 import sklearn.metrics
 from metrics import ConfusionMatrix, ALL_METRICS
@@ -392,8 +390,15 @@ def format_dict_for_excel(dict_scores):
         list_cases.append(flatten_dict)
     return list_cases
 
+def make_bootstrap(data, function, bootstrap_list):
+    #print("length of data is: ", len(data))
+    #print("random choice data is: ", np.random.choice(list(data), size=len(list(data)), replace=True))
+    assert float(len(data)) == float(len(bootstrap_list[0]))
+    #boot_data = [[data[a] for a in bootstrap_list[i]] for i in range(len(bootstrap_list))]
+    return [function([data[a] for a in bootstrap_list[i]]) for i in range(len(bootstrap_list))]
 
-
+def value_CI(data, func):
+    return
 def aggregate_scores(test_ref_pair,
                      threshold=None,
                      labels=None,
@@ -452,6 +457,8 @@ def aggregate_scores(test_ref_pair,
 
     remainder_start = time.perf_counter()
 
+    bootstrap_list = [list(np.random.choice(range(len(test)), size=len(list(test)), replace=True)) for _ in range(1000)]
+    epsilon = [1e-8 for _ in range(1000)]
     # brian code 1
 #    all_scores["all"] = list(itertools.chain.from_iterable(all_res))
 
@@ -465,6 +472,7 @@ def aggregate_scores(test_ref_pair,
                 continue
             if label not in all_scores["mean"]:
                 all_scores["mean"][label] = OrderedDict()
+                all_scores["mean"][f"{label} CI"] = OrderedDict()
             for score, value in score_dict.items():
                 if score not in detection_scores:
                     if score not in all_scores["mean"][label]:
@@ -476,6 +484,7 @@ def aggregate_scores(test_ref_pair,
                 continue
             if label not in all_scores["median"]:
                 all_scores["median"][label] = OrderedDict()
+                all_scores["median"][f"{label} CI"] = OrderedDict()
             for score, value in score_dict.items():
                 if score not in detection_scores:
                     if score not in all_scores["median"][label]:
@@ -487,70 +496,110 @@ def aggregate_scores(test_ref_pair,
                 continue
             if label not in all_scores["image-level classification"]:
                 all_scores["image-level classification"][label] = OrderedDict()
+                all_scores["image-level classification"][f"{label} CI"] = OrderedDict()
             for score, value in score_dict.items():
                 if score in detection_scores:
                     if score not in all_scores["image-level classification"][label]:
                         all_scores["image-level classification"][label][score] = []
                     all_scores["image-level classification"][label][score].append(value)
 
-    for label in all_scores["mean"]:
-        for score in all_scores["mean"][label]:
-            if nanmean:
-                all_scores["mean"][label][score] = float(np.nanmean(all_scores["mean"][label][score]))
-            else:
-                all_scores["mean"][label][score] = float(np.mean(all_scores["mean"][label][score]))
-
-    for label in all_scores["median"]:
-        for score in all_scores["median"][label]:
-            if nanmean:
-                all_scores["median"][label][score] = float(np.nanmedian(all_scores["median"][label][score]))
-            else:
-                all_scores["median"][label][score] = float(np.median(all_scores["median"][label][score]))
-
-    for label in all_scores["image-level classification"]:
-        for score in all_scores["image-level classification"][label]:
-            if nanmean:
-                if score == 'LDR' or score == 'CCR':
-                    all_scores["image-level classification"][label][score] = float(
-                        np.nanmean(all_scores["image-level classification"][label][score]))
+    for label in labels:
+        if float(label) > float(0):
+            label = str(label)
+            for score in all_scores["mean"][label]:
+                if nanmean:
+                    all_scores["mean"][f"{label} CI"][score] = "±" + str(np.round(np.std(make_bootstrap(all_scores["mean"][label][score], np.nanmean,bootstrap_list)),2))
+                    all_scores["mean"][label][score] = float(np.nanmean(all_scores["mean"][label][score]))
                 else:
-                    all_scores["image-level classification"][label][score] = float(
-                        np.nansum(all_scores["image-level classification"][label][score]))
-            else:
-                if score == 'LDR' or score == 'CCR':
-                    all_scores["image-level classification"][label][score] = float(
-                        np.mean(all_scores["image-level classification"][label][score]))
+                    all_scores["mean"][f"{label} CI"][score] = "±" + str(np.round(np.std( make_bootstrap(all_scores["mean"][label][score], np.mean, bootstrap_list)),2))
+                    all_scores["mean"][label][score] = float(np.mean(all_scores["mean"][label][score]))
+
+    for label in labels:
+        if float(label) > float(0):
+            label = str(label)
+            for score in all_scores["median"][label]:
+                if nanmean:
+                    all_scores["median"][f"{label} CI"][score] = "±" + str(np.round(np.std( make_bootstrap(all_scores["median"][label][score], np.nanmedian, bootstrap_list)),2))
+                    all_scores["median"][label][score] = float(np.nanmedian(all_scores["median"][label][score]))
                 else:
-                    all_scores["image-level classification"][label][score] = float(
-                        np.sum(all_scores["image-level classification"][label][score]))
+                    all_scores["median"][f"{label} CI"][score] = "±" + str(np.round(np.std( make_bootstrap(all_scores["median"][label][score], np.median, bootstrap_list)),2))
+                    all_scores["median"][label][score] = float(np.median(all_scores["median"][label][score]))
+
+    for label in labels:
+        if float(label) > 0:
+            label = str(label)
+            for score in all_scores["image-level classification"][label]:
+                if nanmean:
+                    if score == 'LDR' or score == 'CCR':
+                        all_scores["image-level classification"][f"{label} CI"][score] = \
+                            "±" + str(np.round(np.std( make_bootstrap(all_scores["image-level classification"][label][score], np.nanmean, bootstrap_list)),2))
+                        all_scores["image-level classification"][label][score] = \
+                            float(np.nanmean(all_scores["image-level classification"][label][score]))
+                    else:
+                        all_scores["image-level classification"][f"{label} CI"][score] = \
+                            make_bootstrap(all_scores["image-level classification"][label][score], np.nansum, bootstrap_list)
+                        all_scores["image-level classification"][label][score] = \
+                            float(np.nansum(all_scores["image-level classification"][label][score]))
+                else:
+                    if score == 'LDR' or score == 'CCR':
+                        all_scores["image-level classification"][f"{label} CI"][score] = \
+                            "±" + str(np.round(np.std(make_bootstrap(all_scores["image-level classification"][label][score], np.mean, bootstrap_list)),2))
+                        all_scores["image-level classification"][label][score] = \
+                            float(np.mean(all_scores["image-level classification"][label][score]))
+                    else:
+                        all_scores["image-level classification"][f"{label} CI"][score] = \
+                            make_bootstrap(all_scores["image-level classification"][label][score],np.sum, bootstrap_list)
+                        all_scores["image-level classification"][label][score] = \
+                            float(np.sum(all_scores["image-level classification"][label][score]))
     # calculate image classification metric
     if isinstance(threshold, float):
-        for label in all_scores["image-level classification"]:
-            tp = float(all_scores["image-level classification"][label]["Image-level TP"])
-            tn = float(all_scores["image-level classification"][label]["Image-level TN"])
-            fp = float(all_scores["image-level classification"][label]["Image-level FP"])
-            fn = float(all_scores["image-level classification"][label]["Image-level FN"])
-            # positive reference cases
-            all_scores["image-level classification"][label]["Positive reference studies"] = tp + fn
-            # negative reference cases
-            all_scores["image-level classification"][label]["Negative reference studies"] = tn + fp
-            # calculate sensitivity
-            all_scores["image-level classification"][label]["image-level Sensitivity/TPR"] = tp / (tp + fn + 1e-8)
-            # calculate Precision
-            all_scores["image-level classification"][label]["image-level Precision"] = tp / (tp + fp + 1e-8)
-            # calculate specificity
-            all_scores["image-level classification"][label]["image-level Specificity"] = tn / (tn + fp + 1e-8)
-            # calculate specificity
-            all_scores["image-level classification"][label]["image-level FPR"] = tp / (tp + fn + 1e-8)
-            # calculate AUC for label > 0
-            try:
-                if int(label) > 0:
-                    y_true = np.array([i[label]['Volume Reference'] for i in all_scores["all"]])
-                    y_true = (y_true > threshold) * 1
-                    y_score = np.array([i[label]['Volume Test'] for i in all_scores["all"]])
-                    all_scores["image-level classification"][label]["image-level AUC"] = sklearn.metrics.roc_auc_score(y_true, y_score)
-            except:
-                print("no image class evaluation")
+        for label in labels:
+            if float(label) > 0:
+                label = str(label)
+                tp = float(all_scores["image-level classification"][label]["Image-level TP"])
+                tn = float(all_scores["image-level classification"][label]["Image-level TN"])
+                fp = float(all_scores["image-level classification"][label]["Image-level FP"])
+                fn = float(all_scores["image-level classification"][label]["Image-level FN"])
+                tp_b = all_scores["image-level classification"][f"{label} CI"]["Image-level TP"]
+                tn_b = all_scores["image-level classification"][f"{label} CI"]["Image-level TN"]
+                fp_b = all_scores["image-level classification"][f"{label} CI"]["Image-level FP"]
+                fn_b = all_scores["image-level classification"][f"{label} CI"]["Image-level FN"]
+                # positive reference cases
+                all_scores["image-level classification"][label]["Positive reference studies"] = tp + fn
+                # negative reference cases
+                all_scores["image-level classification"][label]["Negative reference studies"] = tn + fp
+                # calculate sensitivity
+                all_scores["image-level classification"][label]["image-level Sensitivity/TPR"] = tp / (tp + fn + 1e-8)
+                all_scores["image-level classification"][f"{label} CI"]["image-level Sensitivity/TPR"] = "±" + str(np.round(np.std(np.divide(tp_b,np.sum((tp_b,fn_b,epsilon)))),2))
+                # calculate Precision
+                all_scores["image-level classification"][label]["image-level Precision"] = tp / (tp + fp + 1e-8)
+                all_scores["image-level classification"][f"{label} CI"]["image-level Precision"] = "±" + str(np.round(np.std(np.divide(tp_b,np.sum((tp_b,fp_b,epsilon)))),2))
+                # calculate specificity
+                all_scores["image-level classification"][label]["image-level Specificity"] = tn / (tn + fp + 1e-8)
+                all_scores["image-level classification"][f"{label} CI"]["image-level Specificity"] = "±" + str(np.round(np.std(np.divide(tn_b, np.sum((tn_b,fp_b,epsilon)))),2))
+                # calculate specificity
+                all_scores["image-level classification"][label]["image-level FPR"] = tp / (tp + fn + 1e-8)
+                all_scores["image-level classification"][f"{label} CI"]["image-level FPR"] = "±" + str(np.round(np.std(np.divide(tp_b, np.sum((tp_b,fn_b,epsilon)))),2))
+                # calculate AUC for label > 0
+                all_scores["image-level classification"][f"{label} CI"]["Image-level TP"] = float("NaN")
+                all_scores["image-level classification"][f"{label} CI"]["Image-level TN"] = float("NaN")
+                all_scores["image-level classification"][f"{label} CI"]["Image-level FP"] = float("NaN")
+                all_scores["image-level classification"][f"{label} CI"]["Image-level FN"] = float("NaN")
+                try:
+                    if int(label) > 0:
+                        y_true = np.array([i[label]['Volume Reference'] for i in all_scores["all"]])
+                        y_true = (y_true > threshold) * 1
+                        y_true_b = [[y_true[a] for a in bootstrap_list[i]] for i in range(len(bootstrap_list))]
+
+                        y_score = np.array([i[label]['Volume Test'] for i in all_scores["all"]])
+                        y_score_b = [[y_score[a] for a in bootstrap_list[i]] for i in range(len(bootstrap_list))]
+
+                        all_scores["image-level classification"][label]["image-level AUC"] = sklearn.metrics.roc_auc_score(y_true, y_score)
+                        all_scores["image-level classification"][f"{label} CI"]["image-level AUC"] = "±" + str(
+                            np.round(np.std([sklearn.metrics.roc_auc_score(t, s) for t, s in zip(y_true_b,y_score_b)]), 2))
+
+                except:
+                    print("no AUC evaluation")
 
 
     # save to file if desired
@@ -564,7 +613,8 @@ def aggregate_scores(test_ref_pair,
         json_dict["task"] = json_task
         json_dict["author"] = json_author
         json_dict["results"] = all_scores
-        json_dict["id"] = hashlib.md5(json.dumps(json_dict).encode("utf-8")).hexdigest()[:12]
+        #json_dict["id"] = hashlib.md5(json.dumps(json_dict).encode("utf-8")).hexdigest()[:12]
+        print(json_dict)
         save_json(json_dict, json_output_file)
         df1 = pd.DataFrame(format_dict_for_excel(all_scores["all"]))
         df2 = pd.DataFrame(all_scores["mean"])
