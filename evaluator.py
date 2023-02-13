@@ -17,8 +17,6 @@ import sklearn.metrics
 from metrics import ConfusionMatrix, ALL_METRICS
 import collections
 import inspect
-import json
-import hashlib
 from datetime import datetime
 from multiprocessing.pool import Pool
 import numpy as np
@@ -51,7 +49,9 @@ class Evaluator:
         "Volume Absolute Difference",
         "Volume Absolute Difference",
         "Volumetric Similarity",
-        "Surface Dice Variable"
+        "Surface Dice Variable",
+        "Jaccard",
+        "Surface Jaccard Variable",
     ]
 
     default_advanced_metrics = [
@@ -391,10 +391,7 @@ def format_dict_for_excel(dict_scores):
     return list_cases
 
 def make_bootstrap(data, function, bootstrap_list):
-    #print("length of data is: ", len(data))
-    #print("random choice data is: ", np.random.choice(list(data), size=len(list(data)), replace=True))
     assert float(len(data)) == float(len(bootstrap_list[0]))
-    #boot_data = [[data[a] for a in bootstrap_list[i]] for i in range(len(bootstrap_list))]
     return [function([data[a] for a in bootstrap_list[i]]) for i in range(len(bootstrap_list))]
 
 def value_CI(data, func):
@@ -448,7 +445,17 @@ def aggregate_scores(test_ref_pair,
     test = [i[0] for i in test_ref_pair]
     ref = [i[1] for i in test_ref_pair]
 
+    # pbar = tqdm(total=len(ref))
+    #
+    # all_res = []
+
     run_eval_start_time = time.perf_counter()
+
+    # with Pool(num_threads) as p:
+    #     for i in p.map(run_evaluation, zip(test, ref, [evaluator] * len(ref), [metric_kwargs] * len(ref))):
+    #         all_res.append(i)
+    #         pbar.update(i)
+    #
     p = Pool(num_threads)
     all_res = p.map(run_evaluation, zip(test, ref, [evaluator] * len(ref), [metric_kwargs] * len(ref)))
     p.close()
@@ -457,8 +464,10 @@ def aggregate_scores(test_ref_pair,
 
     remainder_start = time.perf_counter()
 
-    bootstrap_list = [list(np.random.choice(range(len(test)), size=len(list(test)), replace=True)) for _ in range(1000)]
-    epsilon = [1e-8 for _ in range(1000)]
+    reps = 1000
+
+    bootstrap_list = [list(np.random.choice(range(len(test)), size=len(list(test)), replace=True)) for _ in range(reps)]
+    epsilon = [1e-8 for _ in range(reps)]
     # brian code 1
 #    all_scores["all"] = list(itertools.chain.from_iterable(all_res))
 
@@ -570,7 +579,7 @@ def aggregate_scores(test_ref_pair,
                 all_scores["image-level classification"][label]["Negative reference studies"] = tn + fp
                 # calculate sensitivity
                 all_scores["image-level classification"][label]["image-level Sensitivity/TPR"] = tp / (tp + fn + 1e-8)
-                all_scores["image-level classification"][f"{label} CI"]["image-level Sensitivity/TPR"] = "±" + str(np.round(np.std(np.divide(tp_b,np.sum((tp_b,fn_b,epsilon)))),2))
+                all_scores["image-level classification"][f"{label} CI"]["image-level Sensitivity/TPR"] = "±" + str(np.round(np.std([(tp_b[i] / (tp_b[i] + fn_b[i] + 1e-8))for i in range(reps)]),2))
                 # calculate Precision
                 all_scores["image-level classification"][label]["image-level Precision"] = tp / (tp + fp + 1e-8)
                 all_scores["image-level classification"][f"{label} CI"]["image-level Precision"] = "±" + str(np.round(np.std(np.divide(tp_b,np.sum((tp_b,fp_b,epsilon)))),2))
