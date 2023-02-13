@@ -58,7 +58,9 @@ def disagreement(dirs: list):
     bootstrap_list = [list(np.random.choice(range(len(cases)), size=len(list(cases)), replace=True)) for _ in range(reps)]
 
     mean_mean = []
-    for case in tqdm(range(len(cases))):
+    case = 0
+    number_cases = len(cases)
+    for case in range(number_cases):
         case_name = cases[case][0].rsplit("/",1)[-1].rsplit(".")[0]
 
         # check labels of raters per case to have the same shape
@@ -71,14 +73,15 @@ def disagreement(dirs: list):
         entropy = my_entropy(array_labels)
 
         mean_mean.append(entropy)
-        print("Current median uncertainty", median(mean_mean), end='\r')
+        case += 1
+        print(f"Running average after {case}/{number_cases} of uncertainty: ", fmean(mean_mean))
 
     plot_histogramm(mean_mean)
 
     # calculate 95% confidence interval
-    CI = np.std(make_bootstrap(mean_mean, bootstrap_list))*1.96
+    CI = np.std(make_bootstrap(mean_mean,median, bootstrap_list))*1.96
 
-    print("The final median uncertainty is: ", median(mean_mean), "±", CI)
+    print("The final median uncertainty is: ", fmean(mean_mean), "±", CI)
 
 
 
