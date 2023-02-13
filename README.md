@@ -61,7 +61,5 @@ The R scripts used in the preprint will be made public after peer-reviewed publi
 | **Precision** | ❌                                                    | ❌                                                         | ✅                                  | ❌ set threshold                 |
 | **Hausdorff Distance 95**     | ✅                                           | ✅                                                | ❌                                           | ❌ set threshold                 |
 | **Average Surface Distance**       | ❌                                                    | ❌                                                         | ✅                                  | ❌ set threshold                 |
-| **Surface Dice at Tolerance 0mm**  | ✅                                           | ❌                                                         | ✅                                  | ❌ set threshold                 |
+| **Surface Dice at Tolerance 2mm**  | ✅                                           | ✅                                                          | ✅                                  | ❌ set threshold                 |
 | **Surface Dice at Tolerance 5mm**  | ✅                                           | ✅                                                | ✅                                  | ❌ set threshold                 |
-| **Surface Dice at Tolerance 10mm** | (❌)                                                    | ✅                                                | ✅                                  | ❌ set threshold                 |
-
