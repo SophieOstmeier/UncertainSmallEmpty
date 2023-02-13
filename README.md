@@ -63,3 +63,5 @@ The R scripts used in the preprint will be made public after peer-reviewed publi
 | **Average Surface Distance**       | ❌                                                    | ❌                                                         | ✅                                  | ❌ set threshold                 |
 | **Surface Dice at Tolerance 2mm**  | ✅                                           | ✅                                                          | ✅                                  | ❌ set threshold                 |
 | **Surface Dice at Tolerance 5mm**  | ✅                                           | ✅                                                | ✅                                  | ❌ set threshold                 |
+
+Note the Jaccard Index (IoU) is equivalent to the Dice score. The choice depence on the user's preference.
