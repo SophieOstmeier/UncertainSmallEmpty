@@ -18,18 +18,21 @@ Please cite as
 Ostmeier, Sophie, et al. "USE-evaluator: Performance metrics for medical image segmentation models supervised by uncertain, small or empty reference annotations in neuroimaging." Medical Image Analysis 90 (2023): 102927.
 ```
  
-The corresponding preprint is
+The corresponding journal article is
 
 <ul>
-"USE-Evaluator: Performance Metrics for Medical Image Segmentation Models with Uncertain, Small or Empty Reference Annotations"
+USE-Evaluator: Performance metrics for medical image segmentation models supervised by uncertain, small or empty reference annotations in neuroimaging
 </ul>
 <ul>
-arXiv:2209.13008 [eess.IV]
-https://doi.org/10.48550/arXiv.2209.13008
+[https://doi.org/10.48550/arXiv.2209.13008](https://doi.org/10.1016/j.media.2023.102927)
 </ul>
 <ul>
 Abstract:
-Performance metrics for medical image segmentation models are used to measure the agreement between the reference annotation and the predicted segmentation. Usually, overlap metrics, such as the Dice, are used as a metric to evaluate the performance of these models in order for results to be comparable. However, there is a mismatch between the distributions of cases and difficulty level of segmentation tasks in public data sets compared to clinical practice. Common metrics fail to measure the impact of this mismatch, especially for clinical data sets that include low signal pathologies, a difficult segmentation task, and uncertain, small, or empty reference annotations. This limitation may result in ineffective research of machine learning practitioners in designing and optimizing models. Dimensions of evaluating clinical value include consideration of the uncertainty of reference annotations, independence from reference annotation volume size, and evaluation of classification of empty reference annotations. We study how uncertain, small, and empty reference annotations influence the value of metrics for medical image segmentation on an in-house data set regardless of the model. We examine metrics behavior on the predictions of a standard deep learning framework in order to identify metrics with clinical value. We compare to a public benchmark data set (BraTS 2019) with a high-signal pathology and certain, larger, and no empty reference annotations. We may show machine learning practitioners, how uncertain, small, or empty reference annotations require a rethinking of the evaluation and optimizing procedures.
+Performance metrics for medical image segmentation models are used to measure the agreement between the reference annotation and the predicted segmentation. Usually, overlap metrics, such as the Dice, are used as a metric to evaluate the performance of these models in order for results to be comparable.
+
+However, there is a mismatch between the distributions of cases and the difficulty level of segmentation tasks in public data sets compared to clinical practice. Common metrics used to assess performance fail to capture the impact of this mismatch, particularly when dealing with datasets in clinical settings that involve challenging segmentation tasks, pathologies with low signal, and reference annotations that are uncertain, small, or empty. Limitations of common metrics may result in ineffective machine learning research in designing and optimizing models. To effectively evaluate the clinical value of such models, it is essential to consider factors such as the uncertainty associated with reference annotations, the ability to accurately measure performance regardless of the size of the reference annotation volume, and the classification of cases where reference annotations are empty.
+
+We study how uncertain, small, and empty reference annotations influence the value of metrics on a stroke in-house data set regardless of the model. We examine metrics behavior on the predictions of a standard deep learning framework in order to identify suitable metrics in such a setting. We compare our results to the BRATS 2019 and Spinal Cord public data sets. We show how uncertain, small, or empty reference annotations require a rethinking of the evaluation. 
 </ul>
 
 # Installation
