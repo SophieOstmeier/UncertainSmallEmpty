@@ -15,7 +15,7 @@ The evaluator returns a .xlsx und .csv file with all metrics for segmentation an
 Please cite as
 
 ```
-Ostmeier, Sophie, et al. "Evaluation of Medical Image Segmentation Models for Uncertain, Small or Empty Reference Annotations." arXiv preprint arXiv:2209.13008 (2022).
+Ostmeier, Sophie, et al. "USE-evaluator: Performance metrics for medical image segmentation models supervised by uncertain, small or empty reference annotations in neuroimaging." Medical Image Analysis 90 (2023): 102927.
 ```
  
 The corresponding preprint is
