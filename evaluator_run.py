@@ -19,8 +19,8 @@ from batchgenerators.utilities.file_and_folder_operations import *
 
 
 def remove_hidden(path_images):
-    list_images_hidden = subfiles(path_images, prefix='.', join=True)
-    for i in subfiles(path_images, suffix='.nii', join=True):
+    list_images_hidden = subfiles(path_images, prefix=".", join=True)
+    for i in subfiles(path_images, suffix=".nii", join=True):
         if i not in list_images_hidden:
             list_images_hidden.append(i)
     for i in list_images_hidden:
@@ -28,27 +28,56 @@ def remove_hidden(path_images):
             os.remove(i)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("folder_with_gts",
-                        help="Path to folder with the ground truth segmentations in .nii.gz format"
-                             "The filename has to be the same as the filename of the corresponding segmentation.")
-    parser.add_argument("folder_with_predictions",
-                        help="Path to folder with the segmentation you would like to compare to the ground truth segmentations. "
-                             "Must be in in .nii.gz format."
-                             "The filename has to be the same as the filename of the corresponding gt.")
-    parser.add_argument("-number_classes", required=False, default=1,type=int,
-                        help="number of segmentation classes including background class, for example '2' for binary"
-                             "segmentation task")
-    parser.add_argument("-threshold", required=False, default=False, type=float,
-                        help="If threshold necessary. By default False. If integer is used selects all cases where below"
-                        "the threshold where the metric is not defined and runs detection task analysis.")
-    parser.add_argument("-hidden", required=False, default=True, action='store_false',
-                        help="removes all hidden files in input folders")
-    parser.add_argument("-specific", required=False, default=False, action='store_true',
-                        help="evaluates subset based on list provided")
-    parser.add_argument("-name", required=False, default=None, type=str,
-                        help="Desired name of result files, default name is time of evaluation start")
+    parser.add_argument(
+        "folder_with_gts",
+        help="Path to folder with the ground truth segmentations in .nii.gz format"
+        "The filename has to be the same as the filename of the corresponding segmentation.",
+    )
+    parser.add_argument(
+        "folder_with_predictions",
+        help="Path to folder with the segmentation you would like to compare to the ground truth segmentations. "
+        "Must be in in .nii.gz format."
+        "The filename has to be the same as the filename of the corresponding gt.",
+    )
+    parser.add_argument(
+        "-number_classes",
+        required=False,
+        default=1,
+        type=int,
+        help="number of segmentation classes including background class, for example '2' for binary"
+        "segmentation task",
+    )
+    parser.add_argument(
+        "-threshold",
+        required=False,
+        default=False,
+        type=float,
+        help="If threshold necessary. By default False. If integer is used selects all cases where below"
+        "the threshold where the metric is not defined and runs detection task analysis.",
+    )
+    parser.add_argument(
+        "-hidden",
+        required=False,
+        default=True,
+        action="store_false",
+        help="removes all hidden files in input folders",
+    )
+    parser.add_argument(
+        "-specific",
+        required=False,
+        default=False,
+        action="store_true",
+        help="evaluates subset based on list provided",
+    )
+    parser.add_argument(
+        "-name",
+        required=False,
+        default=None,
+        type=str,
+        help="Desired name of result files, default name is time of evaluation start",
+    )
 
     args = parser.parse_args()
 
@@ -56,8 +85,8 @@ if __name__ == '__main__':
     folder_with_gts = args.folder_with_gts
     folder_with_predictions = args.folder_with_predictions
 
-    # specific casses to be evaluated
-    specific = args.specific
+    # # specific casses to be evaluated
+    # specific = args.specific
 
     # name of result files
     name = args.name
@@ -66,26 +95,35 @@ if __name__ == '__main__':
     threshold = args.threshold
     if isinstance(threshold, float):
         th = threshold
-        print(f'I use a threshold of {th} ml. Below this threshold mask are considered empty. The evaluation of a '
-              f'detection task will be initialized.')
+        print(
+            f"I use a threshold of {th} ml. Below this threshold mask are considered empty. The evaluation of a "
+            f"detection task will be initialized."
+        )
     else:
         th = None
     # segmentation classes
     number_classes = args.number_classes
-    assert isinstance(number_classes, int), 'I need more than one class. Please set -number_classes <integer > 1>'
+    assert isinstance(
+        number_classes, int
+    ), "I need more than one class. Please set -number_classes <integer > 1>"
     classes = tuple(range(int(number_classes)))
-    print(f'I use classes {classes}')
+    print(f"I use classes {classes}")
 
     # checking for hidden files and dimension agreement
-    print('hidden:',args.hidden)
+    print("hidden:", args.hidden)
     if args.hidden:
         remove_hidden(folder_with_gts)
         remove_hidden(folder_with_predictions)
 
     # run
     time_start = process_time()
-    evaluate_folder(folder_with_gts, folder_with_predictions, th, classes, specific, name=name)
+    evaluate_folder(
+        folder_with_gts=folder_with_gts,
+        folder_with_predictions=folder_with_predictions,
+        th=th,
+        labels=classes,
+        name=name,
+    )
     time_end = process_time()
-    print(f'Time needed: {round(time_end-time_start,4)} min')
-    print('Done')
-
+    print(f"Time needed: {round(time_end-time_start,4)} min")
+    print("Done")

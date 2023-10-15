@@ -18,15 +18,15 @@ from surface_distance import compute_surface_distances
 from scipy.spatial import distance
 import math
 
+
 def assert_shape(test, reference):
     assert test.shape == reference.shape, "Shape mismatch: {} and {}".format(
-        test.shape, reference.shape)
+        test.shape, reference.shape
+    )
 
 
 class ConfusionMatrix:
-
     def __init__(self, test=None, reference=None, voxel_spacing=None, threshold=None):
-
         self.tp = None
         self.fp = None
         self.tn = None
@@ -44,27 +44,22 @@ class ConfusionMatrix:
         self.set_threshold(threshold)
 
     def set_test(self, test):
-
         self.test = test
         self.reset()
 
     def set_reference(self, reference):
-
         self.reference = reference
         self.reset()
 
     def set_voxel_spacing(self, voxel_spacing):
-
         self.voxel_spacing = voxel_spacing
         self.reset()
 
     def set_threshold(self, threshold):
-
         self.threshold = threshold
         self.reset()
 
     def reset(self):
-
         self.tp = None
         self.fp = None
         self.tn = None
@@ -78,9 +73,10 @@ class ConfusionMatrix:
         self.test_full = None
 
     def compute(self):
-
         if self.test is None or self.reference is None:
-            raise ValueError("'test' and 'reference' must both be set to compute confusion matrix.")
+            raise ValueError(
+                "'test' and 'reference' must both be set to compute confusion matrix."
+            )
 
         assert_shape(self.test, self.reference)
 
@@ -106,7 +102,6 @@ class ConfusionMatrix:
             self.reference_small = self.reference_empty
 
     def get_matrix(self):
-
         for entry in (self.tp, self.fp, self.tn, self.fn):
             if entry is None:
                 self.compute()
@@ -115,22 +110,29 @@ class ConfusionMatrix:
         return self.tp, self.fp, self.tn, self.fn
 
     def get_size(self):
-
         if self.size is None:
             self.compute()
         return self.size
 
     def get_existence(self):
-
-        for case in (self.test_empty, self.test_full, self.reference_empty, self.reference_full):
+        for case in (
+            self.test_empty,
+            self.test_full,
+            self.reference_empty,
+            self.reference_full,
+        ):
             if case is None:
                 self.compute()
                 break
 
-        return self.test_empty, self.test_full, self.reference_empty, self.reference_full
+        return (
+            self.test_empty,
+            self.test_full,
+            self.reference_empty,
+            self.reference_full,
+        )
 
     def get_thresholded(self):
-
         for case in (self.test_small, self.reference_small):
             if case is None:
                 self.compute()
@@ -139,27 +141,46 @@ class ConfusionMatrix:
         return self.test_small, self.reference_small
 
 
-def dice_orig(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-              nan_for_nonexisting=True, **kwargs):
+def dice_orig(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """2TP / (2TP + FP + FN)"""
 
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
     tp, fp, tn, fn = confusion_matrix.get_matrix()
-    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
+    (
+        test_empty,
+        test_full,
+        reference_empty,
+        reference_full,
+    ) = confusion_matrix.get_existence()
 
     if test_empty and reference_empty:
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
-    return float(2. * tp / (2 * tp + fp + fn))
+    return float(2.0 * tp / (2 * tp + fp + fn))
 
 
-def dice_th(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, nan_for_nonexisting=True,
-            threshold=None, **kwargs):
+def dice_th(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    nan_for_nonexisting=True,
+    threshold=None,
+    **kwargs
+):
     """2TP / (2TP + FP + FN)"""
 
     if confusion_matrix is None:
@@ -172,11 +193,14 @@ def dice_th(test=None, reference=None, confusion_matrix=None, voxel_spacing=None
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
-    return float(2. * tp / (2 * tp + fp + fn + 1e-8))
+    return float(2.0 * tp / (2 * tp + fp + fn + 1e-8))
 
-def jaccard_th(test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs):
+
+def jaccard_th(
+    test=None, reference=None, confusion_matrix=None, nan_for_nonexisting=True, **kwargs
+):
     """TP / (TP + FP + FN)"""
 
     if confusion_matrix is None:
@@ -189,14 +213,20 @@ def jaccard_th(test=None, reference=None, confusion_matrix=None, nan_for_nonexis
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return float(tp / (tp + fp + fn + 1e-8))
 
 
-
-def precision(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-              nan_for_nonexisting=True, **kwargs):
+def precision(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """TP / (TP + FP)"""
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
@@ -208,14 +238,20 @@ def precision(test=None, reference=None, confusion_matrix=None, voxel_spacing=No
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return float(tp / (tp + fp + 1e-8))
 
 
-def sensitivity(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                nan_for_nonexisting=True,
-                **kwargs):
+def sensitivity(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """TP / (TP + FN)"""
 
     if confusion_matrix is None:
@@ -228,38 +264,72 @@ def sensitivity(test=None, reference=None, confusion_matrix=None, voxel_spacing=
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return float(tp / (tp + fn + 1e-8))
 
 
-def recall(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-           nan_for_nonexisting=True, **kwargs):
+def recall(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """TP / (TP + FN)"""
 
-    return sensitivity(test, reference, confusion_matrix, threshold, voxel_spacing, nan_for_nonexisting, **kwargs)
+    return sensitivity(
+        test,
+        reference,
+        confusion_matrix,
+        threshold,
+        voxel_spacing,
+        nan_for_nonexisting,
+        **kwargs
+    )
 
-def specificity(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                nan_for_nonexisting=True,
-                **kwargs):
+
+def specificity(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """TN / (TN + FP)"""
 
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
     tp, fp, tn, fn = confusion_matrix.get_matrix()
-    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
+    (
+        test_empty,
+        test_full,
+        reference_empty,
+        reference_full,
+    ) = confusion_matrix.get_existence()
 
     if reference_full:
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return float(tn / (tn + fp))
 
 
-def accuracy(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None, **kwargs):
+def accuracy(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    **kwargs
+):
     """(TP + TN) / (TP + FP + FN + TN)"""
 
     if confusion_matrix is None:
@@ -270,78 +340,152 @@ def accuracy(test=None, reference=None, confusion_matrix=None, voxel_spacing=Non
     return float((tp + tn) / (tp + fp + tn + fn))
 
 
-def fscore(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-           nan_for_nonexisting=True, beta=1.,
-           **kwargs):
+def fscore(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    beta=1.0,
+    **kwargs
+):
     """(1 + b^2) * TP / ((1 + b^2) * TP + b^2 * FN + FP)"""
 
-    precision_ = precision(test, reference, confusion_matrix, threshold, voxel_spacing, nan_for_nonexisting)
-    recall_ = recall(test, reference, confusion_matrix, threshold, voxel_spacing, nan_for_nonexisting)
+    precision_ = precision(
+        test, reference, confusion_matrix, threshold, voxel_spacing, nan_for_nonexisting
+    )
+    recall_ = recall(
+        test, reference, confusion_matrix, threshold, voxel_spacing, nan_for_nonexisting
+    )
 
-    return (1 + beta * beta) * precision_ * recall_ / \
-           ((beta * beta * precision_) + recall_ + 1e-8)
+    return (
+        (1 + beta * beta)
+        * precision_
+        * recall_
+        / ((beta * beta * precision_) + recall_ + 1e-8)
+    )
 
 
-def false_positive_rate(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                        nan_for_nonexisting=True,
-                        **kwargs):
+def false_positive_rate(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """FP / (FP + TN)"""
 
-    return 1 - specificity(test, reference, confusion_matrix, voxel_spacing, threshold, nan_for_nonexisting)
+    return 1 - specificity(
+        test, reference, confusion_matrix, voxel_spacing, threshold, nan_for_nonexisting
+    )
 
 
-def false_omission_rate(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                        nan_for_nonexisting=True, **kwargs):
+def false_omission_rate(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """FN / (TN + FN)"""
 
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
     tp, fp, tn, fn = confusion_matrix.get_matrix()
-    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
+    (
+        test_empty,
+        test_full,
+        reference_empty,
+        reference_full,
+    ) = confusion_matrix.get_existence()
 
     if test_full:
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return float(fn / (fn + tn))
 
 
-def false_negative_rate(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                        nan_for_nonexisting=True,
-                        **kwargs):
+def false_negative_rate(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """FN / (TP + FN)"""
 
-    return 1 - sensitivity(test, reference, confusion_matrix, threshold, voxel_spacing, nan_for_nonexisting)
+    return 1 - sensitivity(
+        test, reference, confusion_matrix, threshold, voxel_spacing, nan_for_nonexisting
+    )
 
 
-def true_negative_rate(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                       nan_for_nonexisting=True,
-                       **kwargs):
+def true_negative_rate(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """TN / (TN + FP)"""
 
-    return specificity(test, reference, confusion_matrix, voxel_spacing, nan_for_nonexisting)
+    return specificity(
+        test, reference, confusion_matrix, voxel_spacing, nan_for_nonexisting
+    )
 
 
-def false_discovery_rate(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                         nan_for_nonexisting=True,
-                         **kwargs):
+def false_discovery_rate(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """FP / (TP + FP)"""
 
-    return 1 - precision(test, reference, confusion_matrix, threshold, voxel_spacing, nan_for_nonexisting)
+    return 1 - precision(
+        test, reference, confusion_matrix, threshold, voxel_spacing, nan_for_nonexisting
+    )
 
 
-def negative_predictive_value(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                              nan_for_nonexisting=True, **kwargs):
+def negative_predictive_value(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """TN / (TN + FN)"""
 
-    return 1 - false_omission_rate(test, reference, confusion_matrix, nan_for_nonexisting)
+    return 1 - false_omission_rate(
+        test, reference, confusion_matrix, nan_for_nonexisting
+    )
 
 
-def total_positives_test(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                         **kwargs):
+def total_positives_test(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    **kwargs
+):
     """TP + FP"""
 
     if confusion_matrix is None:
@@ -352,8 +496,14 @@ def total_positives_test(test=None, reference=None, confusion_matrix=None, voxel
     return tp + fp
 
 
-def total_negatives_test(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                         **kwargs):
+def total_negatives_test(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    **kwargs
+):
     """TN + FN"""
 
     if confusion_matrix is None:
@@ -364,8 +514,14 @@ def total_negatives_test(test=None, reference=None, confusion_matrix=None, voxel
     return tn + fn
 
 
-def total_positives_reference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                              **kwargs):
+def total_positives_reference(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    **kwargs
+):
     """TP + FN"""
 
     if confusion_matrix is None:
@@ -376,8 +532,14 @@ def total_positives_reference(test=None, reference=None, confusion_matrix=None, 
     return tp + fn
 
 
-def total_negatives_reference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                              **kwargs):
+def total_negatives_reference(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    **kwargs
+):
     """TN + FP"""
 
     if confusion_matrix is None:
@@ -388,9 +550,16 @@ def total_negatives_reference(test=None, reference=None, confusion_matrix=None, 
     return tn + fp
 
 
-def hausdorff_distance_95(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                          nan_for_nonexisting=True,
-                          connectivity=1, **kwargs):
+def hausdorff_distance_95(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    connectivity=1,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -402,13 +571,24 @@ def hausdorff_distance_95(test=None, reference=None, confusion_matrix=None, voxe
         else:
             return 0
 
-    return metric.hd95(confusion_matrix.test, confusion_matrix.reference, confusion_matrix.voxel_spacing, connectivity)
+    return metric.hd95(
+        confusion_matrix.test,
+        confusion_matrix.reference,
+        confusion_matrix.voxel_spacing,
+        connectivity,
+    )
 
 
-def avg_surface_distance(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                         nan_for_nonexisting=True,
-                         connectivity=1, **kwargs):
-
+def avg_surface_distance(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    connectivity=1,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -421,12 +601,26 @@ def avg_surface_distance(test=None, reference=None, confusion_matrix=None, voxel
             return 0
     else:
         try:
-            return metric.asd(confusion_matrix.test, confusion_matrix.reference, confusion_matrix.voxel_spacing, connectivity)
+            return metric.asd(
+                confusion_matrix.test,
+                confusion_matrix.reference,
+                confusion_matrix.voxel_spacing,
+                connectivity,
+            )
         except:
-            print('i crashes yikes')
+            print("i crashes yikes")
 
-def avg_surface_distance_symmetric(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                                   nan_for_nonexisting=True, connectivity=1, **kwargs):
+
+def avg_surface_distance_symmetric(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    connectivity=1,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -442,8 +636,17 @@ def avg_surface_distance_symmetric(test=None, reference=None, confusion_matrix=N
 
     return metric.assd(test, reference, confusion_matrix.voxel_spacing, connectivity)
 
-def compute_surface_dice_at_tolerance_list(test=None, reference=None, confusion_matrix=None, voxel_spacing=None,
-                                        threshold=None, nan_for_nonexisting=True, tolerance_list = [2,5,10], **kwargs):
+
+def compute_surface_dice_at_tolerance_list(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    tolerance_list=[2, 5, 10],
+    **kwargs
+):
     """Computes the _surface_ DICE coefficient at a specified tolerance.
 
     Computes the _surface_ DICE coefficient at a specified tolerance. Not to be
@@ -467,11 +670,11 @@ def compute_surface_dice_at_tolerance_list(test=None, reference=None, confusion_
 
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    print("tolerance_list: ", tolerance_list)
+    # print("tolerance_list: ", tolerance_list)
 
-    tolerance_list = [2,5,10]
+    tolerance_list = [2, 5, 10]
 
-    print(f"tolerance_list now: {tolerance_list}")
+    # print(f"tolerance_list now: {tolerance_list}")
 
     if reference_small or test_small:
         if nan_for_nonexisting:
@@ -480,7 +683,9 @@ def compute_surface_dice_at_tolerance_list(test=None, reference=None, confusion_
             return [0 for x in tolerance_list]
 
     test, reference = confusion_matrix.test, confusion_matrix.reference
-    surface_distances = compute_surface_distances(test, reference, confusion_matrix.voxel_spacing)
+    surface_distances = compute_surface_distances(
+        test, reference, confusion_matrix.voxel_spacing
+    )
     distances_gt_to_pred = surface_distances["distances_gt_to_pred"]
     distances_pred_to_gt = surface_distances["distances_pred_to_gt"]
     surfel_areas_gt = surface_distances["surfel_areas_gt"]
@@ -489,13 +694,30 @@ def compute_surface_dice_at_tolerance_list(test=None, reference=None, confusion_
     surfel_areas_pred_sum = np.sum(surfel_areas_pred)
     surfel_areas_gt_sum = np.sum(surfel_areas_gt)
 
-    return list(map(
-        lambda tolerance: (
-                (np.sum(surfel_areas_gt[distances_gt_to_pred <= tolerance]) +
-                    np.sum(surfel_areas_pred[distances_pred_to_gt <= tolerance])) / (surfel_areas_gt_sum + surfel_areas_pred_sum)), tolerance_list))
+    return list(
+        map(
+            lambda tolerance: (
+                (
+                    np.sum(surfel_areas_gt[distances_gt_to_pred <= tolerance])
+                    + np.sum(surfel_areas_pred[distances_pred_to_gt <= tolerance])
+                )
+                / (surfel_areas_gt_sum + surfel_areas_pred_sum)
+            ),
+            tolerance_list,
+        )
+    )
 
-def compute_surface_jaccard_at_tolerance_list(test=None, reference=None, confusion_matrix=None, voxel_spacing=None,
-                                        threshold=None, nan_for_nonexisting=True, tolerance_list = None, **kwargs):
+
+def compute_surface_jaccard_at_tolerance_list(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    tolerance_list=None,
+    **kwargs
+):
     """Computes the _surface_ DICE coefficient at a specified tolerance.
 
     Computes the _surface_ DICE coefficient at a specified tolerance. Not to be
@@ -526,7 +748,9 @@ def compute_surface_jaccard_at_tolerance_list(test=None, reference=None, confusi
             return [0 for x in tolerance_list]
 
     test, reference = confusion_matrix.test, confusion_matrix.reference
-    surface_distances = compute_surface_distances(test, reference, confusion_matrix.voxel_spacing)
+    surface_distances = compute_surface_distances(
+        test, reference, confusion_matrix.voxel_spacing
+    )
     distances_gt_to_pred = surface_distances["distances_gt_to_pred"]
     surfel_areas_gt = surface_distances["surfel_areas_gt"]
     surfel_areas_pred = surface_distances["surfel_areas_pred"]
@@ -534,10 +758,19 @@ def compute_surface_jaccard_at_tolerance_list(test=None, reference=None, confusi
     surfel_areas_pred_sum = np.sum(surfel_areas_pred)
     surfel_areas_gt_sum = np.sum(surfel_areas_gt)
 
-    return list(map(
-        lambda tolerance : (
-                np.sum(surfel_areas_gt[distances_gt_to_pred <= tolerance]) /
-                (surfel_areas_gt_sum + surfel_areas_pred_sum - np.sum(surfel_areas_gt[distances_gt_to_pred <= tolerance]))), tolerance_list))
+    return list(
+        map(
+            lambda tolerance: (
+                np.sum(surfel_areas_gt[distances_gt_to_pred <= tolerance])
+                / (
+                    surfel_areas_gt_sum
+                    + surfel_areas_pred_sum
+                    - np.sum(surfel_areas_gt[distances_gt_to_pred <= tolerance])
+                )
+            ),
+            tolerance_list,
+        )
+    )
 
 
 def malahanobis_distance(test=None, reference=None):
@@ -546,10 +779,15 @@ def malahanobis_distance(test=None, reference=None):
     return distance.mahalanobis(test, reference, cov_inv)
 
 
-def volume_test(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                nan_for_nonexisting=True,
-                **kwargs):
-
+def volume_test(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -560,10 +798,15 @@ def volume_test(test=None, reference=None, confusion_matrix=None, voxel_spacing=
     return (tp + fp) * voxel_volume * 0.001
 
 
-def volume_reference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                     nan_for_nonexisting=True,
-                     **kwargs):
-
+def volume_reference(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -574,9 +817,15 @@ def volume_reference(test=None, reference=None, confusion_matrix=None, voxel_spa
     return float((tp + fn) * voxel_volume * 0.001)
 
 
-def abs_volume_difference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                          nan_for_nonexisting=True, **kwargs):
-
+def abs_volume_difference(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -589,13 +838,20 @@ def abs_volume_difference(test=None, reference=None, confusion_matrix=None, voxe
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return float(abs((tp + fn) - (tp + fp)) * voxel_volume * 0.001)
 
-def volume_difference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                          nan_for_nonexisting=True, **kwargs):
 
+def volume_difference(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -608,13 +864,20 @@ def volume_difference(test=None, reference=None, confusion_matrix=None, voxel_sp
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return float((tp + fn) - (tp + fp) * voxel_volume * 0.001)
 
 
-def rel_volume_difference(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                          nan_for_nonexisting=True, **kwargs):
+def rel_volume_difference(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -625,14 +888,21 @@ def rel_volume_difference(test=None, reference=None, confusion_matrix=None, voxe
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return float(abs((tp + fn) - (tp + fp)) / (tp + fn))
 
 
-def volumetric_similarity(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                          nan_for_nonexisting=True, **kwargs):
-    """ (FN - FP) / (2TP + FP + FN) """
+def volumetric_similarity(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
+    """(FN - FP) / (2TP + FP + FN)"""
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -643,13 +913,20 @@ def volumetric_similarity(test=None, reference=None, confusion_matrix=None, voxe
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return float(1 - (abs(fn - fp) / (2 * tp + fp + fn + 1e-8)))
 
 
-def detection(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-              nan_for_nonexisting=True, **kwargs):
+def detection(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -663,8 +940,15 @@ def detection(test=None, reference=None, confusion_matrix=None, voxel_spacing=No
         return 0
 
 
-def detection_tp(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                 nan_for_nonexisting=True, **kwargs):
+def detection_tp(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -676,8 +960,15 @@ def detection_tp(test=None, reference=None, confusion_matrix=None, voxel_spacing
         return 0
 
 
-def detection_tn(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                 nan_for_nonexisting=True, **kwargs):
+def detection_tn(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -689,8 +980,15 @@ def detection_tn(test=None, reference=None, confusion_matrix=None, voxel_spacing
         return 0
 
 
-def detection_fp(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                 nan_for_nonexisting=True, **kwargs):
+def detection_fp(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -702,8 +1000,15 @@ def detection_fp(test=None, reference=None, confusion_matrix=None, voxel_spacing
         return 0
 
 
-def detection_fn(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                 nan_for_nonexisting=True, **kwargs):
+def detection_fn(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -715,8 +1020,15 @@ def detection_fn(test=None, reference=None, confusion_matrix=None, voxel_spacing
         return 0
 
 
-def ldr(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None, nan_for_nonexisting=True,
-        **kwargs):
+def ldr(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -732,8 +1044,15 @@ def ldr(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, th
         return 0
 
 
-def class_imbalance_alpha(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                          nan_for_nonexisting=True, **kwargs):
+def class_imbalance_alpha(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     """
     Includes all voxels of the image. Use only  for comparison within a data set with a constant number of voxels.
     :param test:
@@ -748,19 +1067,31 @@ def class_imbalance_alpha(test=None, reference=None, confusion_matrix=None, voxe
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
     tp, fp, tn, fn = confusion_matrix.get_matrix()
-    test_empty, test_full, reference_empty, reference_full = confusion_matrix.get_existence()
+    (
+        test_empty,
+        test_full,
+        reference_empty,
+        reference_full,
+    ) = confusion_matrix.get_existence()
 
     if reference_empty:
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return (tp + fn) / (tn + fp + tn + fn)
 
 
-def relative_tp(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None,
-                nan_for_nonexisting=True, **kwargs):
+def relative_tp(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -772,14 +1103,21 @@ def relative_tp(test=None, reference=None, confusion_matrix=None, voxel_spacing=
         if nan_for_nonexisting:
             return float("NaN")
         else:
-            return 0.
+            return 0.0
 
     return tp / (tp + tn + fn + fp)
 
 
-def tp(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None, nan_for_nonexisting=True,
-       **kwargs):
-    """ (2TP + FP)/(2*TP + FN + 2*FP)"""
+def tp(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
+    """(2TP + FP)/(2*TP + FN + 2*FP)"""
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -788,9 +1126,16 @@ def tp(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, thr
     return tp
 
 
-def fp(test=None, reference=None, confusion_matrix=None, voxel_spacing=None, threshold=None, nan_for_nonexisting=True,
-       **kwargs):
-    """ (2TP + FP)/(2*TP + FN + 2*FP)"""
+def fp(
+    test=None,
+    reference=None,
+    confusion_matrix=None,
+    voxel_spacing=None,
+    threshold=None,
+    nan_for_nonexisting=True,
+    **kwargs
+):
+    """(2TP + FP)/(2*TP + FN + 2*FP)"""
     if confusion_matrix is None:
         confusion_matrix = ConfusionMatrix(test, reference, voxel_spacing, threshold)
 
@@ -810,7 +1155,7 @@ ALL_METRICS = {
     "Dice original": dice_orig,
     "Dice": dice_th,
     "Surface Dice Variable": compute_surface_dice_at_tolerance_list,
-    "Jaccard" : jaccard_th,
+    "Jaccard": jaccard_th,
     "Surface Jaccard Variable": compute_surface_dice_at_tolerance_list,
     "Hausdorff Distance 95": hausdorff_distance_95,
     "Precision": precision,
@@ -837,5 +1182,5 @@ ALL_METRICS = {
     "Image-level TN": detection_tn,
     "Image-level TP": detection_tp,
     "Image-level FN": detection_fn,
-    "Image-level FP": detection_fp
+    "Image-level FP": detection_fp,
 }
