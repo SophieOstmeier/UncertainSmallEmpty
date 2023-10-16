@@ -56,7 +56,7 @@ class Evaluator:
         "Volumetric Similarity",
         "Surface Dice Variable",
         "Jaccard",
-        "Surface Jaccard Variable",
+        # "Surface Jaccard Variable",
     ]
 
     default_advanced_metrics = []
@@ -879,7 +879,6 @@ def evaluate_folder(
     folder_with_predictions: str,
     th: float,
     labels: tuple,
-    # specific: bool,
     name: str,
     **metric_kwargs,
 ):
@@ -914,7 +913,6 @@ def evaluate_folder(
         (join(folder_with_predictions, i), join(folder_with_gts, a))
         for i, a in zip(files_pred, files_gt)
     ]
-    agg_s_time = time.perf_counter()
     res = aggregate_scores(
         test_ref_pair,
         threshold=threshold,
@@ -924,5 +922,4 @@ def evaluate_folder(
         labels=labels,
         **metric_kwargs,
     )
-    print("agg scores took: ", time.perf_counter() - agg_s_time)
     return res

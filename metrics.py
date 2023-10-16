@@ -209,7 +209,7 @@ def jaccard_th(
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small ^ (reference_small and test_small):
+    if reference_small or test_small:
         if nan_for_nonexisting:
             return float("NaN")
         else:
@@ -234,7 +234,7 @@ def precision(
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small ^ (reference_small and test_small):
+    if reference_small or test_small:
         if nan_for_nonexisting:
             return float("NaN")
         else:
@@ -260,7 +260,7 @@ def sensitivity(
     tp, fp, tn, fn = confusion_matrix.get_matrix()
     test_small, reference_small = confusion_matrix.get_thresholded()
 
-    if reference_small ^ (reference_small and test_small):
+    if reference_small or test_small:
         if nan_for_nonexisting:
             return float("NaN")
         else:

@@ -1,0 +1,144 @@
+{
+    "author": "Sophie",
+    "description": "",
+    "name": "",
+    "results": {
+        "all": [
+            {
+                "1": {
+                    "Avg. Symmetric Surface Distance": 6.100614354850475,
+                    "CCR": 1,
+                    "Dice": 0.16200393492962137,
+                    "Hausdorff Distance 95": 22.075038252158937,
+                    "Image-level FN": 0,
+                    "Image-level FP": 0,
+                    "Image-level TN": 0,
+                    "Image-level TP": 1,
+                    "Jaccard": 0.0881416114040582,
+                    "Precision": 0.08919418758251561,
+                    "Recall": 0.8819226750215156,
+                    "Surface Dice Variable 10": 0.5220084630754972,
+                    "Surface Dice Variable 2": 0.19116005785598444,
+                    "Surface Dice Variable 5": 0.2860675855040292,
+                    "Surface Jaccard Variable": [
+                        0.19116005785598444,
+                        0.2860675855040292,
+                        0.5220084630754972
+                    ],
+                    "Total Positives Reference": 1914,
+                    "Total Positives Test": 18925,
+                    "Volume Absolute Difference": 15.704266659686967,
+                    "Volume Reference": 1.7669723347622628,
+                    "Volume Test": 17.471238994449227,
+                    "Volumetric Similarity": 0.18369403522281125
+                },
+                "reference": "Test_files_gt/NCCT_Test.nii.gz",
+                "test": "Test_files_segmentation/NCCT_Test.nii.gz"
+            }
+        ],
+        "image-level classification": {
+            "1": {
+                "CCR": 1.0,
+                "Image-level FN": 0.0,
+                "Image-level FP": 0.0,
+                "Image-level TN": 0.0,
+                "Image-level TP": 1.0,
+                "Negative reference studies": 0.0,
+                "Positive reference studies": 1.0,
+                "image-level FPR": 0.9999999900000002,
+                "image-level Precision": 0.9999999900000002,
+                "image-level Sensitivity/TPR": 0.9999999900000002,
+                "image-level Specificity": 0.0
+            },
+            "1 CI": {
+                "CCR": "\u00b10.0",
+                "Image-level FN": NaN,
+                "Image-level FP": NaN,
+                "Image-level TN": NaN,
+                "Image-level TP": NaN,
+                "image-level FPR": "\u00b10.0",
+                "image-level Precision": "\u00b10.0",
+                "image-level Sensitivity/TPR": "\u00b10.0",
+                "image-level Specificity": "\u00b10.0"
+            }
+        },
+        "mean": {
+            "1": {
+                "Avg. Symmetric Surface Distance": 6.100614354850475,
+                "Dice": 0.16200393492962137,
+                "Hausdorff Distance 95": 22.075038252158937,
+                "Jaccard": 0.0881416114040582,
+                "Precision": 0.08919418758251561,
+                "Recall": 0.8819226750215156,
+                "Surface Dice Variable 10": 0.5220084630754972,
+                "Surface Dice Variable 2": 0.19116005785598444,
+                "Surface Dice Variable 5": 0.2860675855040292,
+                "Surface Jaccard Variable": 0.33307870214517027,
+                "Total Positives Reference": 1914.0,
+                "Total Positives Test": 18925.0,
+                "Volume Absolute Difference": 15.704266659686967,
+                "Volume Reference": 1.7669723347622628,
+                "Volume Test": 17.471238994449227,
+                "Volumetric Similarity": 0.18369403522281125
+            },
+            "1 CI": {
+                "Avg. Symmetric Surface Distance": "\u00b10.0",
+                "Dice": "\u00b10.0",
+                "Hausdorff Distance 95": "\u00b10.0",
+                "Jaccard": "\u00b10.0",
+                "Precision": "\u00b10.0",
+                "Recall": "\u00b10.0",
+                "Surface Dice Variable 10": "\u00b10.0",
+                "Surface Dice Variable 2": "\u00b10.0",
+                "Surface Dice Variable 5": "\u00b10.0",
+                "Surface Jaccard Variable": "\u00b10.0",
+                "Total Positives Reference": "\u00b10.0",
+                "Total Positives Test": "\u00b10.0",
+                "Volume Absolute Difference": "\u00b10.0",
+                "Volume Reference": "\u00b10.0",
+                "Volume Test": "\u00b10.0",
+                "Volumetric Similarity": "\u00b10.0"
+            }
+        },
+        "median": {
+            "1": {
+                "Avg. Symmetric Surface Distance": 6.100614354850475,
+                "Dice": 0.16200393492962137,
+                "Hausdorff Distance 95": 22.075038252158937,
+                "Jaccard": 0.0881416114040582,
+                "Precision": 0.08919418758251561,
+                "Recall": 0.8819226750215156,
+                "Surface Dice Variable 10": 0.5220084630754972,
+                "Surface Dice Variable 2": 0.19116005785598444,
+                "Surface Dice Variable 5": 0.2860675855040292,
+                "Surface Jaccard Variable": 0.2860675855040292,
+                "Total Positives Reference": 1914.0,
+                "Total Positives Test": 18925.0,
+                "Volume Absolute Difference": 15.704266659686967,
+                "Volume Reference": 1.7669723347622628,
+                "Volume Test": 17.471238994449227,
+                "Volumetric Similarity": 0.18369403522281125
+            },
+            "1 CI": {
+                "Avg. Symmetric Surface Distance": "\u00b10.0",
+                "Dice": "\u00b10.0",
+                "Hausdorff Distance 95": "\u00b10.0",
+                "Jaccard": "\u00b10.0",
+                "Precision": "\u00b10.0",
+                "Recall": "\u00b10.0",
+                "Surface Dice Variable 10": "\u00b10.0",
+                "Surface Dice Variable 2": "\u00b10.0",
+                "Surface Dice Variable 5": "\u00b10.0",
+                "Surface Jaccard Variable": "\u00b10.0",
+                "Total Positives Reference": "\u00b10.0",
+                "Total Positives Test": "\u00b10.0",
+                "Volume Absolute Difference": "\u00b10.0",
+                "Volume Reference": "\u00b10.0",
+                "Volume Test": "\u00b10.0",
+                "Volumetric Similarity": "\u00b10.0"
+            }
+        }
+    },
+    "task": "",
+    "timestamp": "2023-10-15 17:29:55.451398"
+}
