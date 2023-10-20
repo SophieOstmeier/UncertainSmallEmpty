@@ -9,3 +9,4 @@ argparse~=1.4.0
 matplotlib~=3.6.3
 tqdm~=4.64.1
 ctg-surface-distance
+flatten_dict
