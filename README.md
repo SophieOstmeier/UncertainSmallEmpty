@@ -1,8 +1,14 @@
+# Motivation
+Many common evaluation methods for medical images can do a poor job scoring model performance in the presence of uncertain, small or empty reference annotations.
+This can reduce the clinical potential of these algorithms by poorly evaluating performance on clinically influential examples. 
+This repository and accompanying [paper](https://doi.org/10.1016/j.media.2023.102927) ([preprint](https://doi.org/10.48550/arXiv.2209.13008)) aligns evaluation methodology with **clinical** performance in the presence of annotations with these properties.
+
+
 # Evaluation of Medical Image Segmentation Models for UncertainSmallEmpty Reference Annotations
 
 Uncertain: inter-**expert** variability (can be quantified by comparing segmentations of two experts with this evaluator)
 
-Small: approx. 1% of the relevent body cavity or organ
+Small: approx. 1% of the relevant body cavity or organ
 
 Empty: np.sum(reference_annotation) = 0 or below threshold
 
