@@ -11,12 +11,6 @@ You can use this evaluator to compare a directory of ground truth segmentations 
 The ground truth segmentation has to match the corresponding manual or predicted segmentation in shape and filename. 
 
 The evaluator returns a .xlsx und .csv file with all metrics for segmentation and detection/image-classification task (if a threshold was set). Please refer to the table below to choose a set of metrics that is clinically meaningful for your data set. 
-
-Please cite as
-
-```
-Ostmeier, Sophie, et al. "USE-evaluator: Performance metrics for medical image segmentation models supervised by uncertain, small or empty reference annotations in neuroimaging." Medical Image Analysis 90 (2023): 102927.
-```
  
 The corresponding journal article is
 
@@ -68,3 +62,17 @@ The R scripts used in the preprint will be made public after peer-reviewed publi
 | **Surface Dice at Tolerance 5mm**  | ✅                                           | ✅                                                | ✅                                  | ❌ set threshold                 |
 
 Note the Jaccard Index (IoU) is equivalent to the Dice score. The choice depence on the user's preference.
+
+If you find this helpful, please cite
+
+```
+@article{ostmeier2023use,
+  title={USE-Evaluator: Performance metrics for medical image segmentation models supervised by uncertain, small or empty reference annotations in neuroimaging},
+  author={Ostmeier, Sophie and Axelrod, Brian and Isensee, Fabian and Bertels, Jeroen and Mlynash, Michael and Christensen, Soren and Lansberg, Maarten G and Albers, Gregory W and Sheth, Rajen and Verhaaren, Benjamin FJ and others},
+  journal={Medical Image Analysis},
+  volume={90},
+  pages={102927},
+  year={2023},
+  publisher={Elsevier}
+}
+```
